@@ -1,3 +1,41 @@
 <resources>
     <string name="app_name">SheSecure</string>
+    <string name="safety_illustration">Safety illustration</string>
+    <string name="hero_title">Your Personal Safety Companion — Anytime, Anywhere</string>
+    <string name="hero_subtitle">SheSecure empowers women with real-time alerts, tracking &amp; emergency features to ensure safety wherever you go.</string>
+    <string name="get_started">Get Started</string>
+    <string name="how_it_works">How It Works</string>
+    <string name="key_features">Key Features</string>
+    <string name="about_shesecure">About SheSecure</string>
+    <string name="about_description">SheSecure is your all-in-one safety companion, designed especially for women. Whether you\'re commuting late at night, facing an emergency, or just want peace of mind — we\'re here. Real-time location tracking, instant SOS alerts, nearby help centers, and emotional support — all in one place.</string>
+    <string name="about_mission">Our mission is simple: To use technology as a shield, a voice, and a helping hand — so every woman feels confident, safe, and heard at every step of her journey.</string>
+    <string name="our_mission">Our Mission</string>
+    <string name="mission_description">At SheSecure, our mission is to revolutionize women\'s safety by providing a user-friendly platform that connects women to real-time safety features, emergency contacts, and support services. We are committed to creating a safer environment by offering instant access to SOS alerts, location sharing, and emotional support, ensuring that every woman is empowered and protected in any situation.</string>
+    <string name="mission_illustration">Mission illustration</string>
+    <string name="our_vision">Our Vision</string>
+    <string name="vision_heading">We created SheSecure because no woman should feel unsafe.</string>
+    <string name="vision_description">Empowering women with the tools and resources they need to feel safe, confident, and in control. We envision a world where every woman, regardless of her location, has immediate access to support, safety, and guidance, enabling her to navigate the world with peace of mind and security.</string>
+    <string name="vision_illustration">Vision illustration</string>
+    <string name="what_people_say">What People Are Saying</string>
+    <string name="contact_us">Contact Us</string>
+    <string name="contact_subtitle">Got questions, feedback, or need help? Reach out to us below — we\'d love to hear from you!</string>
+    <string name="your_name">Your Name*</string>
+    <string name="your_email">Your Email*</string>
+    <string name="subject">Subject*</string>
+    <string name="your_message">Your Message*</string>
+    <string name="send_message">Send Message</string>
+    <string name="footer_description">Empowering women with safety, confidence and technology — every step of the way.</string>
+    <string name="quick_links">Quick Links</string>
+    <string name="features">Features</string>
+    <string name="about">About</string>
+    <string name="contact">Contact</string>
+    <string name="connect">Connect</string>
+    <string name="support_email">Email: support@shesecure.app</string>
+    <string name="copyright">© 2023 SheSecure. All rights reserved.</string>
+    <string-array name="user_types">
+        <item>Select User Type</item>
+        <item>User</item>
+        <item>Counsellor</item>
+        <item>Admin</item>
+    </string-array>
 </resources>
