@@ -26,7 +26,8 @@ import com.bumptech.glide.Glide;
 import com.example.shesecure.activities.LoginActivity;
 import com.example.shesecure.activities.SignupActivity;
 import com.example.shesecure.models.Feedback;
-import com.example.shesecure.models.FeedbackResponse;
+//import com.example.shesecure.models.FeedbackResponse;
+import com.example.shesecure.models.FeedbackRes;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
 import com.example.shesecure.utils.LocationHelper;
@@ -138,14 +139,14 @@ public class MainActivity extends AppCompatActivity {
     private void loadFeedbacks() {
         showLoading();
 
-        Call<FeedbackResponse> call = apiService.getAllFeedbacks();
-        call.enqueue(new Callback<FeedbackResponse>() {
+        Call<FeedbackRes> call = apiService.getAllFeedbacks();
+        call.enqueue(new Callback<FeedbackRes>() {
             @Override
-            public void onResponse(Call<FeedbackResponse> call, Response<FeedbackResponse> response) {
+            public void onResponse(Call<FeedbackRes> call, Response<FeedbackRes> response) {
                 hideLoading();
 
                 if (response.isSuccessful() && response.body() != null) {
-                    FeedbackResponse feedbackResponse = response.body();
+                    FeedbackRes feedbackResponse = response.body();
 
                     if (feedbackResponse.isSuccess() && feedbackResponse.getData() != null) {
                         feedbackList = feedbackResponse.getData();
@@ -166,7 +167,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<FeedbackResponse> call, Throwable t) {
+            public void onFailure(Call<FeedbackRes> call, Throwable t) {
                 hideLoading();
                 showEmptyState();
                 Toast.makeText(MainActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();

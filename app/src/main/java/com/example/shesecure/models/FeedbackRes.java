@@ -3,7 +3,7 @@ package com.example.shesecure.models;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
-public class FeedbackResponse {
+public class FeedbackRes {
     @SerializedName("success")
     private boolean success;
 
@@ -14,9 +14,9 @@ public class FeedbackResponse {
     private List<Feedback> data;
 
     // Constructors
-    public FeedbackResponse() {}
+    public FeedbackRes() {}
 
-    public FeedbackResponse(boolean success, String message, List<Feedback> data) {
+    public FeedbackRes(boolean success, String message, List<Feedback> data) {
         this.success = success;
         this.message = message;
         this.data = data;

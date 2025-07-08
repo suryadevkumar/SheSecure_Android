@@ -14,13 +14,13 @@ import retrofit2.http.POST;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 
-import com.example.shesecure.models.FeedbackResponse;
+import com.example.shesecure.models.FeedbackRes;
 import com.example.shesecure.models.User;
 
 public interface ApiService {
     // feedback
     @GET("feedback/get-feedback")
-    Call<FeedbackResponse> getAllFeedbacks();
+    Call<FeedbackRes> getAllFeedbacks();
 
     // Check if user exists
     @POST("auth/userExist")
