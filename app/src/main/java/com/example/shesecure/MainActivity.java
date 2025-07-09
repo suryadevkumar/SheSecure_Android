@@ -2,11 +2,13 @@ package com.example.shesecure;
 
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageView;
@@ -26,7 +28,6 @@ import com.bumptech.glide.Glide;
 import com.example.shesecure.activities.LoginActivity;
 import com.example.shesecure.activities.SignupActivity;
 import com.example.shesecure.models.Feedback;
-//import com.example.shesecure.models.FeedbackResponse;
 import com.example.shesecure.models.FeedbackRes;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        setStatusBarColor();
 
         // Initialize API service
         apiService = ApiUtils.initializeApiService(this);
@@ -126,6 +128,13 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 LocationHelper.startLocationService(this);
             }
+        }
+    }
+
+    private void setStatusBarColor() {
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(ContextCompat.getColor(this, R.color.pink_600));
         }
     }
 
@@ -207,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View createFeedbackItem(Feedback feedback) {
-        View itemView = LayoutInflater.from(this).inflate(R.layout.feedback_card, null);
+        View itemView = LayoutInflater.from(this).inflate(R.layout.feedback_card, feedbackItemsContainer, false);
 
         // Find views
         ImageView ivProfileImage = itemView.findViewById(R.id.ivProfileImage);
@@ -300,7 +309,7 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
                 if (feedbackScrollView != null && feedbackItemsContainer != null) {
                     int scrollX = feedbackScrollView.getScrollX();
-                    int itemWidth = 600;
+                    int itemWidth = 1050;
                     int maxScroll = feedbackItemsContainer.getWidth() - feedbackScrollView.getWidth();
 
                     if (scrollX < maxScroll) {

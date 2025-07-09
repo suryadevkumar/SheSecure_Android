@@ -2,6 +2,8 @@ package com.example.shesecure.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
@@ -11,7 +13,9 @@ import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -19,19 +23,29 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import android.Manifest;
+import android.location.LocationManager;
+import android.provider.Settings;
+import androidx.core.app.ActivityCompat;
+import androidx.core.view.GravityCompat;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import com.example.shesecure.MainActivity;
 import com.example.shesecure.R;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
-import com.example.shesecure.utils.LocationHelper;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
@@ -42,27 +56,27 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    // Views
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private EditText etEmail;
     private LinearLayout layoutOTP, otpContainer;
     private Button btnSendOTP, btnLogin;
     private TextView tvSignupLink;
     private ProgressBar progressBar;
-
-    // OTP Variables
     private List<EditText> otpEditTexts = new ArrayList<>();
     private static final int OTP_LENGTH = 6;
     private CountDownTimer countDownTimer;
     private boolean isOtpVisible = false;
-
-    // API Service
     private ApiService apiService;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        setStatusBarColor();
 
+        setupNavigationDrawer();
         initializeViews();
         setupOTPInput();
 
@@ -71,6 +85,54 @@ public class LoginActivity extends AppCompatActivity {
         btnSendOTP.setOnClickListener(v -> handleSendOTPClick());
         btnLogin.setOnClickListener(v -> handleLogin());
         tvSignupLink.setOnClickListener(v -> navigateToSignup());
+    }
+
+    private void setStatusBarColor() {
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(ContextCompat.getColor(this, R.color.pink_600));
+        }
+    }
+
+    private void setupNavigationDrawer() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.menu);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        navigationView.getMenu().clear();
+        navigationView.inflateMenu(R.menu.nav_logout_menu);
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            }
+            else if (id == R.id.nav_signup) {
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
+            }
+            else if (id == R.id.nav_login) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void initializeViews() {
@@ -103,7 +165,6 @@ public class LoginActivity extends AppCompatActivity {
             editText.setGravity(Gravity.CENTER);
             editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(1)});
 
-            // Add text changed listener to move focus
             final int position = i;
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -121,7 +182,6 @@ public class LoginActivity extends AppCompatActivity {
                 public void afterTextChanged(Editable s) {}
             });
 
-            // Handle backspace to move to previous box
             editText.setOnKeyListener((v, keyCode, event) -> {
                 if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
                     if (editText.getText().toString().isEmpty() && position > 0) {
@@ -149,7 +209,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void handleSendOTPClick() {
         if (!isOtpVisible) {
-            // First click - validate email and send OTP
             String email = etEmail.getText().toString().trim();
 
             if (email.isEmpty()) {
@@ -180,8 +239,6 @@ public class LoginActivity extends AppCompatActivity {
 
                 try {
                     String responseBody = null;
-
-                    // Handle both successful and error responses
                     if (response.body() != null) {
                         responseBody = response.body().string();
                     } else if (response.errorBody() != null) {
@@ -190,22 +247,16 @@ public class LoginActivity extends AppCompatActivity {
 
                     if (responseBody != null && !responseBody.isEmpty()) {
                         JSONObject jsonObject = new JSONObject(responseBody);
-
-                        // Check the success field in JSON (not HTTP status)
                         if (jsonObject.has("success") && jsonObject.getBoolean("success")) {
-                            // User exists and can login, show OTP section and send OTP
-                            Toast.makeText(LoginActivity.this, "User found! Sending OTP...", Toast.LENGTH_SHORT).show();
                             showOTPSection();
                             sendEmailOTP();
                         } else {
-                            // Show error message (user doesn't exist or other error)
                             String message = jsonObject.optString("message", "User not found");
                             Toast.makeText(LoginActivity.this, message, Toast.LENGTH_LONG).show();
                         }
                     } else {
                         Toast.makeText(LoginActivity.this, "Empty response from server", Toast.LENGTH_SHORT).show();
                     }
-
                 } catch (Exception e) {
                     e.printStackTrace();
                     Toast.makeText(LoginActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -228,7 +279,6 @@ public class LoginActivity extends AppCompatActivity {
         etEmail.setEnabled(false);
         etEmail.setBackgroundColor(ContextCompat.getColor(this, R.color.gray_300));
 
-        // Focus on first OTP input
         if (!otpEditTexts.isEmpty()) {
             otpEditTexts.get(0).requestFocus();
         }
@@ -322,7 +372,6 @@ public class LoginActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnLogin.setEnabled(false);
 
-        // First verify OTP
         String otpJson = String.format("{\"emailOTP\":\"%s\"}", emailOTP);
         RequestBody otpBody = RequestBody.create(MediaType.parse("application/json"), otpJson);
 
@@ -331,7 +380,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if (response.isSuccessful()) {
-                    // OTP verified, now login
                     performLogin(email);
                 } else {
                     progressBar.setVisibility(View.GONE);
@@ -361,41 +409,35 @@ public class LoginActivity extends AppCompatActivity {
                 btnLogin.setEnabled(true);
 
                 try {
-                    if (response.isSuccessful()) {
+                    if (response.isSuccessful() && response.body() != null) {
                         String responseBody = response.body().string();
                         JSONObject jsonObject = new JSONObject(responseBody);
 
-                        if (jsonObject.has("token")) {
+                        if (jsonObject.has("token") && jsonObject.has("user")) {
                             String token = jsonObject.getString("token");
                             JSONObject user = jsonObject.getJSONObject("user");
 
-                            // Save token and user data to SharedPreferences
+                            // Store entire user JSON string
                             SharedPreferences preferences = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
                             SharedPreferences.Editor editor = preferences.edit();
+
                             editor.putString("token", token);
-                            editor.putString("user", user.toString());
+                            editor.putString("userJson", user.toString()); // Save full user object
+
                             editor.apply();
 
                             Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-
-                            // Check if we should start location tracking
-                            if (LocationHelper.shouldTrackLocation(LoginActivity.this)) {
-                                if (!LocationHelper.checkLocationPermissions(LoginActivity.this)) {
-                                    LocationHelper.requestLocationPermissions(LoginActivity.this);
-                                } else {
-                                    LocationHelper.startLocationService(LoginActivity.this);
-                                }
-                            }
-
-                            // Navigate to dashboard
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                            startActivity(intent);
-                            finish();
+                            checkLocationAndProceed(); // Your next step
+                        } else {
+                            Toast.makeText(LoginActivity.this, "Invalid response format", Toast.LENGTH_SHORT).show();
                         }
+                    } else {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        Toast.makeText(LoginActivity.this, "Login failed: " + errorBody, Toast.LENGTH_SHORT).show();
                     }
                 } catch (Exception e) {
-                    Toast.makeText(LoginActivity.this, "Error processing login response", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(LoginActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    e.printStackTrace();
                 }
             }
 
@@ -403,9 +445,67 @@ public class LoginActivity extends AppCompatActivity {
             public void onFailure(Call<ResponseBody> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 btnLogin.setEnabled(true);
-                Toast.makeText(LoginActivity.this, "Network error during login", Toast.LENGTH_SHORT).show();
+                Toast.makeText(LoginActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+
+    private void checkLocationAndProceed() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            showLocationEnableDialog();
+        } else {
+            checkLocationPermissions();
+        }
+    }
+
+    private void showLocationEnableDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Location Required")
+                .setMessage("SheSecure requires location access for your safety. Please enable location.")
+                .setPositiveButton("Enable", (dialog, which) -> {
+                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Exit", (dialog, which) -> {
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void checkLocationPermissions() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE);
+        } else {
+            proceedToDashboard();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                proceedToDashboard();
+            } else {
+                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
+
+    private void proceedToDashboard() {
+        Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
     }
 
     private void navigateToSignup() {

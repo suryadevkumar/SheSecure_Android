@@ -2,6 +2,7 @@ package com.example.shesecure.activities;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.text.Editable;
@@ -11,7 +12,9 @@ import android.text.TextWatcher;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AutoCompleteTextView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,6 +28,9 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.appcompat.widget.Toolbar;
 
 import com.example.shesecure.MainActivity;
 import com.example.shesecure.R;
@@ -32,6 +38,7 @@ import com.example.shesecure.models.Course;
 import com.example.shesecure.models.User;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
+import com.google.android.material.navigation.NavigationView;
 
 import org.json.JSONObject;
 
@@ -40,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
@@ -81,6 +89,8 @@ public class SignupActivity extends AppCompatActivity {
     private ApiService apiService;
     private String userType = "";
     private int currentPage = 1;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
 
     // File picker for certificate
     private ActivityResultLauncher<String> filePickerLauncher;
@@ -89,7 +99,9 @@ public class SignupActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signup);
+        setStatusBarColor();
 
+        setupNavigationDrawer();
         initializeViews();
         setupUserTypeSpinner();
         setupOTPInput();
@@ -106,6 +118,54 @@ public class SignupActivity extends AppCompatActivity {
         btnSendOTP.setOnClickListener(v -> sendEmailOTP());
         btnSignup.setOnClickListener(v -> signUp());
         tvLoginLink.setOnClickListener(v -> navigateToLogin());
+    }
+
+    private void setStatusBarColor() {
+        Window window = getWindow();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            window.setStatusBarColor(ContextCompat.getColor(this, R.color.pink_600));
+        }
+    }
+
+    private void setupNavigationDrawer() {
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        Objects.requireNonNull(getSupportActionBar()).setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeAsUpIndicator(R.drawable.menu);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        navigationView.getMenu().clear();
+        navigationView.inflateMenu(R.menu.nav_logout_menu);
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
+
+            if (id == R.id.nav_home) {
+                startActivity(new Intent(this, MainActivity.class));
+                finish();
+            }
+            else if (id == R.id.nav_signup) {
+                drawerLayout.closeDrawer(GravityCompat.START);
+            }
+            else if (id == R.id.nav_login) {
+                startActivity(new Intent(this, LoginActivity.class));
+                finish();
+            }
+
+            drawerLayout.closeDrawer(GravityCompat.START);
+            return true;
+        });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            drawerLayout.openDrawer(GravityCompat.START);
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     private void initializeViews() {
@@ -161,7 +221,6 @@ public class SignupActivity extends AppCompatActivity {
             editText.setGravity(Gravity.CENTER);
             editText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(1)});
 
-            // Add text changed listener to move focus
             final int position = i;
             editText.addTextChangedListener(new TextWatcher() {
                 @Override
@@ -178,13 +237,12 @@ public class SignupActivity extends AppCompatActivity {
                 public void afterTextChanged(Editable s) {}
             });
 
-            // Handle backspace to move to previous box
             editText.setOnKeyListener((v, keyCode, event) -> {
                 if (keyCode == KeyEvent.KEYCODE_DEL && event.getAction() == KeyEvent.ACTION_DOWN) {
                     if (editText.getText().toString().isEmpty() && position > 0) {
                         EditText previousEditText = otpEditTexts.get(position - 1);
                         previousEditText.requestFocus();
-                        previousEditText.setSelection(previousEditText.getText().length()); // Place cursor at end
+                        previousEditText.setSelection(previousEditText.getText().length());
                         return true;
                     }
                     else if (!editText.getText().toString().isEmpty()) {
@@ -295,9 +353,7 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // Check if email exists before proceeding
         checkEmailExists(email, () -> {
-            // This callback runs if email doesn't exist
             if (userType.equals("User")) {
                 currentPage = 3;
                 showPage(currentPage);
@@ -326,10 +382,8 @@ public class SignupActivity extends AppCompatActivity {
 
                 try {
                     if (response.isSuccessful()) {
-                        // Email doesn't exist or account not found
                         onSuccess.run();
                     } else {
-                        // Parse error response
                         String errorBody = response.errorBody().string();
                         JSONObject jsonObject = new JSONObject(errorBody);
                         String message = jsonObject.getString("message");
@@ -526,7 +580,6 @@ public class SignupActivity extends AppCompatActivity {
         User user = new User(firstName, lastName, email, mobile, userType);
 
         if (userType.equals("User")) {
-            // Simple signup for users
             Call<ResponseBody> call = apiService.signup(user);
             call.enqueue(new Callback<ResponseBody>() {
                 @Override
@@ -550,21 +603,18 @@ public class SignupActivity extends AppCompatActivity {
                 }
             });
         } else {
-            // Multipart signup for Counsellor/Admin with qualifications
             uploadWithQualifications(user);
         }
     }
 
     private void uploadWithQualifications(User user) {
         try {
-            // Prepare user data as RequestBody
             RequestBody firstNameBody = RequestBody.create(MediaType.parse("text/plain"), user.getFirstName());
             RequestBody lastNameBody = RequestBody.create(MediaType.parse("text/plain"), user.getLastName());
             RequestBody emailBody = RequestBody.create(MediaType.parse("text/plain"), user.getEmail());
             RequestBody mobileBody = RequestBody.create(MediaType.parse("text/plain"), user.getMobileNumber());
             RequestBody userTypeBody = RequestBody.create(MediaType.parse("text/plain"), user.getUserType());
 
-            // Prepare qualifications JSON
             StringBuilder qualificationsJson = new StringBuilder("[");
             for (int i = 0; i < coursesData.size(); i++) {
                 Course course = coursesData.get(i);
@@ -581,7 +631,6 @@ public class SignupActivity extends AppCompatActivity {
                     qualificationsJson.toString()
             );
 
-            // Prepare certificate files
             List<MultipartBody.Part> certificateParts = new ArrayList<>();
             for (int i = 0; i < coursesData.size(); i++) {
                 Course course = coursesData.get(i);
@@ -592,7 +641,6 @@ public class SignupActivity extends AppCompatActivity {
                         certificateFile
                 );
 
-                // Use the naming convention expected by your backend
                 String partName = String.format("qualifications[%d].certificate", i);
                 certificateParts.add(MultipartBody.Part.createFormData(
                         partName,
@@ -679,7 +727,7 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void navigateToLogin() {
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
 
