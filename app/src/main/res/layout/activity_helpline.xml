@@ -1,0 +1,598 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bg_gradient">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="@drawable/bg_header_gradient">
+
+        <TextView
+            android:id="@+id/toolbar_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="National Numbers"
+            android:textColor="@color/white"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_gravity="center_horizontal"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="In case of an emergency, call an appropriate number for help."
+            android:textColor="@color/white_alpha_80"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"/>
+    </LinearLayout>
+
+    <!-- Scrollable content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Police -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/police_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/police_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:padding="6dp"
+                        android:layout_marginEnd="16dp"
+                        android:src="@drawable/shield"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/blue_100"
+                        app:tint="@color/blue" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/police_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="100"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/police_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Police"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/police_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Fire Service -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/fire_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/fire_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/fire"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/red_100"
+                        app:tint="@color/red_600"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/fire_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="101"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/fire_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Fire Service"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/fire_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Ambulance -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/ambulance_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/ambulance_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/ambulance"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/ambulance_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="102"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/ambulance_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Ambulance"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/ambulance_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Pregnancy Medic -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/pregnancy_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/pregnancy_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/menstrual_health"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/pink_100"
+                        app:tint="@color/pink_700"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/pregnancy_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="108"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/pregnancy_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Pregnancy Medic"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/pregnancy_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- National Helpline -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/national_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/national_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/purple_100"
+                        app:tint="@color/purple"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/national_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="112"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/national_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="National Helpline"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/national_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Women Helpline -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/women_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/women_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/female"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/yellow_100"
+                        app:tint="@color/yellow_400"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/women_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1091"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/women_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Women Helpline"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/women_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Child Helpline -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/child_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/child_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/child_care"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/pink_50"
+                        app:tint="@color/pink_600"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/child_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1098"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/child_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Child Helpline"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/child_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Road Accident -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/road_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/road_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/car_crash"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/blue_100"
+                        app:tint="@color/blue"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/road_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="1073"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/road_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Road Accident"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/road_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <!-- Railway Protection -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/railway_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:background="?attr/selectableItemBackground">
+
+                    <ImageView
+                        android:id="@+id/railway_icon"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:padding="6dp"
+                        android:src="@drawable/train"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/orange_100"
+                        app:tint="@color/red_500"/>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/railway_number"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="182"
+                            android:textSize="20sp"
+                            android:textStyle="bold"/>
+
+                        <TextView
+                            android:id="@+id/railway_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Railway Protection"
+                            android:textColor="@color/gray_500"/>
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/railway_call_btn"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:padding="3dp"
+                        android:src="@drawable/call_icon"
+                        android:background="@drawable/circle_bg"
+                        android:backgroundTint="@color/light_green"
+                        app:tint="@color/green"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

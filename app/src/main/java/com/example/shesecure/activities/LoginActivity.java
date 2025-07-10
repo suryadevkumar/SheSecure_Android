@@ -502,7 +502,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void proceedToDashboard() {
-        Intent intent = new Intent(LoginActivity.this, DashboardActivity.class);
+        Intent intent = new Intent(LoginActivity.this, UserDashboardActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         finish();

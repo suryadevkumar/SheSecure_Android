@@ -27,7 +27,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- SOS Button (conditionally visible) -->
 
     <!-- Right side profile image -->
     <Button
@@ -35,12 +34,12 @@
         android:layout_width="75dp"
         android:layout_height="40dp"
         android:visibility="gone"
-        android:background="@drawable/sos_button_bg"
         android:text="SOS"
         android:textColor="@color/white"
+        android:backgroundTint="@color/green"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/profileImage"
-        app:layout_constraintHorizontal_bias="0.705"
+        app:layout_constraintHorizontal_bias="0.803"
         app:layout_constraintStart_toEndOf="@+id/logo"
         app:layout_constraintTop_toTopOf="parent" />
 

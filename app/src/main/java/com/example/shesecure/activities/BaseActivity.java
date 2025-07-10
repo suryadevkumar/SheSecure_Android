@@ -67,7 +67,7 @@ public class BaseActivity extends AppCompatActivity {
         Button sosButton = navHeader.findViewById(R.id.sosButton);
 
         // SOS button visibility
-        sosButton.setVisibility(userType != null && userType.equals("user") ? View.VISIBLE : View.GONE);
+        sosButton.setVisibility(userType != null && userType.equals("User") ? View.VISIBLE : View.GONE);
         sosButton.setOnClickListener(v -> triggerSOS());
 
         // Profile image setup
