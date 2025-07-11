@@ -17,14 +17,7 @@ public class HelplineActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_helpline);
-        setStatusBarColor();
         setupEmergencyButtons();
-    }
-
-    private void setStatusBarColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.white));
-        }
     }
 
     private void setupEmergencyButtons() {

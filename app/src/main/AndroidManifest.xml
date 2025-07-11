@@ -44,7 +44,12 @@
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.UserDashboardActivity"/>
+        <activity android:name=".activities.ProfileActivity" />
+        <activity android:name=".activities.EditProfileActivity" />
         <activity android:name=".activities.HelplineActivity" />
+        <activity android:name=".activities.EmergencyContactsActivity"/>
+        <activity android:name=".activities.CustomerSupportActivity"/>
+        <activity android:name=".activities.FeedbackActivity"/>
 
     </application>
 

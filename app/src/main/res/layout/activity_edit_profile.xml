@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Profile Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingVertical="16dp"
+            android:gravity="center_vertical">
+
+            <!-- Profile Image with Edit Icon -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center">
+
+                <de.hdodenhof.circleimageview.CircleImageView
+                    android:id="@+id/profile_image"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:elevation="4dp"
+                    android:src="@drawable/person"
+                    app:civ_border_color="@color/blue_500"
+                    app:civ_border_width="3dp" />
+
+                <ImageButton
+                    android:id="@+id/btn_select_image"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="-4dp"
+                    android:layout_marginBottom="-4dp"
+                    android:background="@drawable/circle_bg"
+                    android:src="@drawable/edit"
+                    android:backgroundTint="@color/white"
+                    app:tint="@color/blue_600"
+                    android:elevation="6dp" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tv_name"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:textColor="@color/black"
+                    android:paddingStart="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/tv_email"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="@color/gray_600"
+                    android:paddingStart="8dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Profile Details Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="@drawable/card_background"
+            android:padding="20dp"
+            android:elevation="2dp"
+            android:backgroundTint="@color/white">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Personal Information"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:paddingBottom="8dp"/>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Phone -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="8dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/call_icon"
+                    app:tint="@color/blue_500"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Phone"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/gray_800"/>
+
+                <TextView
+                    android:id="@+id/tv_phone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="8dp"
+                    android:textAlignment="textEnd"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200"
+                android:layout_marginVertical="4dp"/>
+
+            <!-- User Type -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="8dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/person"
+                    app:tint="@color/blue_500"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Account Type"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/gray_800"/>
+
+                <TextView
+                    android:id="@+id/tv_user_type"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="8dp"
+                    android:textAlignment="textEnd"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200"
+                android:layout_marginVertical="4dp"/>
+
+            <!-- Gender -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/gender"
+                    app:tint="@color/blue_500"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Gender"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/gray_800"/>
+
+                <TextView
+                    android:id="@+id/tv_gender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select Gender"
+                    android:layout_marginStart="8dp"
+                    android:textAlignment="textEnd"
+                    android:drawablePadding="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingVertical="4dp"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200"
+                android:layout_marginVertical="4dp"/>
+
+            <!-- DOB (Editable) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/calendar"
+                    app:tint="@color/blue_500"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Date of Birth"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/gray_800"/>
+
+                <EditText
+                    android:id="@+id/et_dob"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Select date"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="8dp"
+                    android:textAlignment="textEnd"
+                    android:background="@null"
+                    android:inputType="none"
+                    android:drawablePadding="4dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:paddingVertical="4dp"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/gray_200"
+                android:layout_marginVertical="4dp"/>
+
+            <!-- Address (Editable) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingVertical="12dp"
+                android:gravity="center_vertical">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/location_icon"
+                    app:tint="@color/blue_500"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Address"
+                    android:textStyle="bold"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/gray_800"/>
+
+                <EditText
+                    android:id="@+id/et_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Enter address"
+                    android:textColor="@color/black"
+                    android:layout_marginStart="8dp"
+                    android:textAlignment="textEnd"
+                    android:background="@null"
+                    android:inputType="textPostalAddress"
+                    android:drawablePadding="4dp"
+                    android:paddingVertical="4dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Save Button -->
+        <Button
+            android:id="@+id/btn_save"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Save Changes"
+            android:layout_marginTop="24dp"
+            android:textColor="@color/white"
+            android:textAllCaps="false"
+            android:backgroundTint="@color/blue_600"
+            android:textSize="16sp"
+            android:elevation="2dp"/>
+    </LinearLayout>
+</ScrollView>

@@ -42,15 +42,8 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_dashboard);
 
-        setStatusBarColor();
         setupMap();
         setupButtons();
-    }
-
-    private void setStatusBarColor() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.white));
-        }
     }
 
     private void setupMap() {
@@ -68,7 +61,7 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         CardView trustedContactsBtn = findViewById(R.id.trustedContactsBtn);
         trustedContactsBtn.setOnClickListener(v -> {
             // Start TrustedContactsActivity
-            Intent intent = new Intent(UserDashboardActivity.this, HelplineActivity.class);
+            Intent intent = new Intent(UserDashboardActivity.this, EmergencyContactsActivity.class);
             startActivity(intent);
         });
 
@@ -86,14 +79,6 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
 
         // Location Button
         CardView locationBtn = findViewById(R.id.locationBtn);
-        locationBtn.setOnClickListener(v -> {
-            if (!isLoading) {
-                isLoading = true;
-                updateLocationButton();
-                handleLocationClick();
-            }
-        });
-
         // Helpline Button
         CardView helplineBtn = findViewById(R.id.helplineBtn);
         helplineBtn.setOnClickListener(v -> {

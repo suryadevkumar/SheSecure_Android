@@ -80,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
         initializeViews();
         setupOTPInput();
 
-        apiService = ApiUtils.initializeApiService(this);
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
 
         btnSendOTP.setOnClickListener(v -> handleSendOTPClick());
         btnLogin.setOnClickListener(v -> handleLogin());
@@ -417,18 +417,34 @@ public class LoginActivity extends AppCompatActivity {
                             String token = jsonObject.getString("token");
                             JSONObject user = jsonObject.getJSONObject("user");
 
-                            // Store entire user JSON string
+                            String firstName = user.optString("firstName", "");
+                            String lastName = user.optString("lastName", "");
+                            String emailFromResponse = user.optString("email", "");
+                            String userType = user.optString("userType", "");
+
+                            String profileImage = "";
+                            if (user.has("additionalDetails")) {
+                                JSONObject additional = user.getJSONObject("additionalDetails");
+                                profileImage = additional.optString("image", "");
+                            }
+
+                            // Store selected data in SharedPreferences
                             SharedPreferences preferences = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
                             SharedPreferences.Editor editor = preferences.edit();
 
                             editor.putString("token", token);
-                            editor.putString("userJson", user.toString()); // Save full user object
+                            editor.putString("firstName", firstName);
+                            editor.putString("lastName", lastName);
+                            editor.putString("email", emailFromResponse);
+                            editor.putString("userType", userType);
+                            editor.putString("profileImage", profileImage);
 
                             editor.apply();
 
                             Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
                             checkLocationAndProceed(); // Your next step
-                        } else {
+                        }
+                        else {
                             Toast.makeText(LoginActivity.this, "Invalid response format", Toast.LENGTH_SHORT).show();
                         }
                     } else {

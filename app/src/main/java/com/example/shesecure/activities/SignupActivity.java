@@ -107,7 +107,7 @@ public class SignupActivity extends AppCompatActivity {
         setupOTPInput();
         setupFilePicker();
 
-        apiService = ApiUtils.initializeApiService(this);
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
 
         btnNextBasicInfo.setOnClickListener(v -> validateBasicInfo());
         btnAddCourse.setOnClickListener(v -> addCourse());

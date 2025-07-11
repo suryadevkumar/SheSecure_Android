@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
         setStatusBarColor();
 
         // Initialize API service
-        apiService = ApiUtils.initializeApiService(this);
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
 
         View homeSection = findViewById(R.id.home_section);
         getStarted = homeSection.findViewById(R.id.getStarted);

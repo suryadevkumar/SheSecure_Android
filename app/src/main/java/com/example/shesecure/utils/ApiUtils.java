@@ -7,7 +7,7 @@ import com.example.shesecure.services.ApiService;
 import com.example.shesecure.services.RetrofitClient;
 
 public class ApiUtils {
-    public static ApiService initializeApiService(Context context) {
+    public static ApiService initializeApiService(Context context, Class<ApiService> apiServiceClass) {
         try {
             SecurePrefs securePrefs = new SecurePrefs(context);
             securePrefs.saveKeys();

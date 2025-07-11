@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+
+    <!-- Hollow circle (gender center) -->
+    <path
+        android:fillColor="@android:color/transparent"
+        android:strokeColor="#4A4A4A"
+        android:strokeWidth="1.5"
+        android:pathData="M12,7a5,5 0 1,0 0.001,0z" />
+
+    <!-- Female part: vertical stem -->
+    <path
+        android:fillColor="#4A4A4A"
+        android:pathData="M11.5,12h1v4h-1z" />
+
+    <!-- Female part: horizontal cross -->
+    <path
+        android:fillColor="#4A4A4A"
+        android:pathData="M9.5,15h5v1h-5z" />
+
+    <!-- Male part: arrow -->
+    <path
+        android:fillColor="#4A4A4A"
+        android:pathData="M15.5,3h4v4h-1.5V5.2l-3.5,3.5l-1.05,-1.05L17,4.15V3z" />
+</vector>

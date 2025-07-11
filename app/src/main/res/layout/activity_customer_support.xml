@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/blue_50"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Customer Support"
+                android:textSize="24sp"
+                android:textColor="@color/pink_600"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="We're here to help! Please describe your issue and we'll get back to you soon."
+                android:textSize="14sp"
+                android:textColor="@color/gray_600"
+                android:gravity="center"
+                android:paddingHorizontal="24dp"/>
+        </LinearLayout>
+
+        <!-- Form Card -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="4dp"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="24dp">
+
+                <!-- Subject Field -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Subject *"
+                    android:textSize="14sp"
+                    android:textColor="@color/gray_700"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_marginBottom="16dp"
+                    app:boxStrokeColor="@color/pink_600"
+                    app:hintTextColor="@color/pink_600">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_subject"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="What's this about?"
+                        android:maxLength="100"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Message Field -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Message *"
+                    android:textSize="14sp"
+                    android:textColor="@color/gray_700"
+                    android:layout_marginBottom="8dp"/>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_marginBottom="16dp"
+                    app:boxStrokeColor="@color/pink_600"
+                    app:hintTextColor="@color/pink_600">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/et_message"
+                        android:layout_width="match_parent"
+                        android:layout_height="150dp"
+                        android:hint="Please describe your issue in detail..."
+                        android:gravity="top"
+                        android:inputType="textMultiLine"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Submit Button -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_submit"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:text="Submit Request"
+                    android:textSize="16sp"
+                    app:icon="@drawable/send"
+                    app:iconGravity="textStart"
+                    app:iconTint="@color/white"
+                    style="@style/Widget.MaterialComponents.Button"
+                    app:backgroundTint="@color/pink_600"/>
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Footer -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="@color/gray_50"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Need immediate help? "
+                android:textSize="14sp"
+                android:textColor="@color/gray_500"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Call our support team"
+                android:textSize="14sp"
+                android:textColor="@color/pink_600"
+                android:textStyle="bold"
+                android:clickable="true"
+                android:onClick="onCallSupportClicked"/>
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

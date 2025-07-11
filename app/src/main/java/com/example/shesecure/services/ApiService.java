@@ -1,5 +1,9 @@
 package com.example.shesecure.services;
 
+import com.example.shesecure.models.EmergencyContact;
+import com.example.shesecure.models.FeedbackRes;
+import com.example.shesecure.models.User;
+
 import java.util.List;
 
 import okhttp3.MultipartBody;
@@ -7,42 +11,32 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.Header;
 import retrofit2.http.Multipart;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
 
-import com.example.shesecure.models.FeedbackRes;
-import com.example.shesecure.models.User;
-
 public interface ApiService {
-    // feedback
-    @GET("feedback/get-feedback")
-    Call<FeedbackRes> getAllFeedbacks();
-
-    // Check if user exists
+    // Auth endpoints
     @POST("auth/userExist")
     Call<ResponseBody> checkEmailExists(@Body RequestBody body);
 
-    // Send OTP to email
     @POST("auth/send-otp")
     Call<ResponseBody> sendEmailOTP(@Body RequestBody body);
 
-    // Verify OTP
     @POST("auth/verify-otp")
     Call<ResponseBody> verifyEmailOTP(@Body RequestBody body);
 
-    // Login user
     @POST("auth/login")
     Call<ResponseBody> login(@Body RequestBody body);
 
-    // Simple signup for users
     @POST("auth/signup")
     Call<ResponseBody> signup(@Body User user);
 
-    // Signup with qualifications for counselors/admins
     @Multipart
     @POST("auth/signup")
     Call<ResponseBody> signupWithQualifications(
@@ -55,13 +49,72 @@ public interface ApiService {
             @Part List<MultipartBody.Part> certificates
     );
 
-    //location routes
+    // Emergency Contacts endpoints
+    @GET("emergency-contacts/get")
+    Call<EmergencyContactResponse> getEmergencyContacts(@Header("Authorization") String token);
+
+    @POST("emergency-contacts/add")
+    Call<EmergencyContactResponse> addEmergencyContact(
+            @Header("Authorization") String token,
+            @Body EmergencyContact contact
+    );
+
+    @PUT("emergency-contacts/update/{contactId}")
+    Call<EmergencyContactResponse> updateEmergencyContact(
+            @Path("contactId") String contactId,
+            @Header("Authorization") String token,
+            @Body EmergencyContact contact
+    );
+
+    @DELETE("emergency-contacts/remove/{contactId}")
+    Call<EmergencyContactResponse> removeEmergencyContact(
+            @Path("contactId") String contactId,
+            @Header("Authorization") String token
+    );
+
+    // Feedback endpoints
+    @GET("feedback/get-feedback")
+    Call<FeedbackRes> getAllFeedbacks();
+
+    // Location endpoints
     @POST("location/save-userLocation")
     Call<ResponseBody> saveUserLocation(
             @Header("Authorization") String authHeader,
             @Body RequestBody body
     );
 
+    // Profile routes
+    @GET("profile/get-details")
+    Call<ResponseBody> getUserDetails(@Header("Authorization") String token);
+
+    @Multipart
+    @PUT("profile/update-profile")
+    Call<ResponseBody> updateProfile(
+            @Header("Authorization") String token,
+            @Part MultipartBody.Part image,
+            @Part("gender") RequestBody gender,
+            @Part("dob") RequestBody dob,
+            @Part("address") RequestBody address
+    );
+
+    // customer care
+    @POST("auth/customer-care")
+    Call<ResponseBody> submitCustomerCareRequest(
+            @Header("Authorization") String authToken,
+            @Body RequestBody requestBody
+    );
+
+    //feedback
+    @GET("feedback/user")
+    Call<ResponseBody> getUserFeedback(@Header("Authorization") String authToken);
+
+    @POST("feedback/submit-feedback")
+    Call<ResponseBody> submitFeedback(
+            @Header("Authorization") String authToken,
+            @Body RequestBody feedbackData
+    );
+
+    // Crime interaction endpoints
     @GET("api/crimeInteraction/stats")
     Call<ResponseBody> getCrimeInteractionStats(
             @Header("Authorization") String token
@@ -87,4 +140,16 @@ public interface ApiService {
             @Body RequestBody body
     );
 
+    // Response classes
+    class EmergencyContactResponse {
+        private List<EmergencyContact> contacts;
+
+        public List<EmergencyContact> getContacts() {
+            return contacts;
+        }
+
+        public void setContacts(List<EmergencyContact> contacts) {
+            this.contacts = contacts;
+        }
+    }
 }

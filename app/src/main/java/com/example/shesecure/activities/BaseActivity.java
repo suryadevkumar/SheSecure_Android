@@ -1,20 +1,22 @@
 package com.example.shesecure.activities;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.shesecure.R;
@@ -36,8 +38,16 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        apiService = ApiUtils.initializeApiService(this);
-        loadUserData();
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
+        setStatusBarColor();
+        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
+        userType = prefs.getString("userType", null);
+    }
+
+    private void setStatusBarColor() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.white));
+        }
     }
 
     @Override
@@ -70,56 +80,16 @@ public class BaseActivity extends AppCompatActivity {
         sosButton.setVisibility(userType != null && userType.equals("User") ? View.VISIBLE : View.GONE);
         sosButton.setOnClickListener(v -> triggerSOS());
 
-        // Profile image setup
-        loadProfileImage(profileImage);
+        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
+        String imageUrl = prefs.getString("profileImage", "");
+        Glide.with(this)
+                .load(imageUrl)
+                .placeholder(R.drawable.person)
+                .into(profileImage);
         profileImage.setOnClickListener(v -> showProfilePopup(v));
     }
 
-    private void loadUserData() {
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        String userJson = prefs.getString("userJson", null);
-
-        try {
-            if (userJson != null) {
-                userData = new JSONObject(userJson);
-                userType = userData.optString("userType", "");
-
-                // Save parsed name and email
-                String name = userData.optString("firstName", "") + " " +
-                        userData.optString("lastName", "");
-                String email = userData.optString("email", "");
-
-                SharedPreferences.Editor editor = prefs.edit();
-                editor.putString("parsedName", name);
-                editor.putString("parsedEmail", email);
-                editor.apply();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void loadProfileImage(CircleImageView profileImage) {
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        String userJson = prefs.getString("userJson", null);
-
-        if (userJson != null) {
-            try {
-                JSONObject userObj = new JSONObject(userJson);
-                if (userObj.has("additionalDetails")) {
-                    JSONObject additional = userObj.getJSONObject("additionalDetails");
-                    String imageUrl = additional.optString("image");
-                    Glide.with(this)
-                            .load(imageUrl)
-                            .placeholder(R.drawable.person)
-                            .into(profileImage);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
+    @SuppressLint("SetTextI18n")
     private void showProfilePopup(View anchor) {
         View popupView = LayoutInflater.from(this).inflate(R.layout.popup_menu_user, null);
 
@@ -137,19 +107,55 @@ public class BaseActivity extends AppCompatActivity {
         // Find views
         TextView tvUserName = popupView.findViewById(R.id.tvUserName);
         TextView tvUserEmail = popupView.findViewById(R.id.tvUserEmail);
+        LinearLayout optionDashboard = popupView.findViewById(R.id.optionDashboard);
+        LinearLayout optionMyProfile = popupView.findViewById(R.id.optionMyProfile);
         LinearLayout optionEditProfile = popupView.findViewById(R.id.optionEditProfile);
+        LinearLayout optionHelpline = popupView.findViewById(R.id.optionHelpline);
+        LinearLayout optionCustomerSupport = popupView.findViewById(R.id.optionCustomerSupport);
+        LinearLayout optionFeedback = popupView.findViewById(R.id.optionFeedback);
         LinearLayout optionLogout = popupView.findViewById(R.id.optionLogout);
 
         // Set user data
         SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        tvUserName.setText(prefs.getString("parsedName", "User"));
-        tvUserEmail.setText(prefs.getString("parsedEmail", "example@example.com"));
+        tvUserName.setText(prefs.getString("firstName", null) + " " +
+                prefs.getString("lastName", null));
+        tvUserEmail.setText(prefs.getString("email", "example@example.com"));
 
         // Set click listeners
+        optionDashboard.setOnClickListener(v -> {
+            profilePopupWindow.dismiss();
+            // Handle edit profile
+            startActivity(new Intent(this, UserDashboardActivity.class));
+        });
+
+        optionMyProfile.setOnClickListener(v -> {
+            profilePopupWindow.dismiss();
+            // Handle edit profile
+            startActivity(new Intent(this, ProfileActivity.class));
+        });
+
         optionEditProfile.setOnClickListener(v -> {
-//            profilePopupWindow.dismiss();
-//            // Handle edit profile
-//            startActivity(new Intent(this, EditProfileActivity.class));
+            profilePopupWindow.dismiss();
+            // Handle edit profile
+            startActivity(new Intent(this, EditProfileActivity.class));
+        });
+
+        optionHelpline.setOnClickListener(v -> {
+            profilePopupWindow.dismiss();
+            // Handle edit profile
+            startActivity(new Intent(this, HelplineActivity.class));
+        });
+
+        optionCustomerSupport.setOnClickListener(v -> {
+            profilePopupWindow.dismiss();
+            // Handle edit profile
+            startActivity(new Intent(this, CustomerSupportActivity.class));
+        });
+
+        optionFeedback.setOnClickListener(v -> {
+            profilePopupWindow.dismiss();
+            // Handle edit profile
+            startActivity(new Intent(this, FeedbackActivity.class));
         });
 
         optionLogout.setOnClickListener(v -> {

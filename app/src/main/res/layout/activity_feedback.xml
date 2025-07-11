@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/gradient_background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Title -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Share Your Experience"
+            android:textSize="24sp"
+            android:textColor="@color/purple_600"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Rating Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your Rating *"
+            android:textSize="16sp"
+            android:textColor="@color/blue_600"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"/>
+
+        <LinearLayout
+            android:id="@+id/rating_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center"
+            android:background="@drawable/circle_bg"
+            android:backgroundTint="@color/white"
+            android:padding="12dp">
+
+            <ImageView
+                android:id="@+id/star1"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/empty_star"
+                android:tag="1"
+                android:layout_marginHorizontal="4dp"
+                app:tint="@color/gray_600" />
+
+            <ImageView
+                android:id="@+id/star2"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/empty_star"
+                android:tag="2"
+                android:layout_marginHorizontal="4dp"
+                app:tint="@color/gray_600" />
+
+            <ImageView
+                android:id="@+id/star3"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/empty_star"
+                android:tag="3"
+                android:layout_marginHorizontal="4dp"
+                app:tint="@color/gray_600"/>
+
+            <ImageView
+                android:id="@+id/star4"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/empty_star"
+                android:tag="4"
+                android:layout_marginHorizontal="4dp"
+                app:tint="@color/gray_600" />
+
+            <ImageView
+                android:id="@+id/star5"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/empty_star"
+                android:tag="5"
+                android:layout_marginHorizontal="4dp"
+                app:tint="@color/gray_600" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tv_rating_error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Please select a rating"
+            android:textColor="@color/red_500"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Review Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Your Review *"
+            android:textSize="16sp"
+            android:textColor="@color/blue_600"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"/>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:boxBackgroundColor="@color/white"
+            app:boxStrokeColor="@color/blue_200"
+            app:errorEnabled="true">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_review"
+                android:layout_width="match_parent"
+                android:layout_height="150dp"
+                android:hint="Tell us about your experience in detail..."
+                android:gravity="top"
+                android:inputType="textMultiLine"
+                android:maxLength="200"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="end">
+
+            <TextView
+                android:id="@+id/tv_char_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="0/200"
+                android:textSize="12sp"
+                android:textColor="@color/blue_500"/>
+        </LinearLayout>
+
+        <!-- Submit Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_submit"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Submit Feedback"
+            android:textSize="16sp"
+            android:layout_marginTop="16dp"
+            app:backgroundTint="@color/purple_500"
+            app:icon="@drawable/send"
+            app:iconGravity="textStart"
+            app:iconTint="@color/white"/>
+    </LinearLayout>
+</ScrollView>
