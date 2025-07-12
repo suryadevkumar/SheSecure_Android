@@ -33,7 +33,7 @@ public class SecurePrefs {
     }
 
     // Access keys
-    public String getAPI() {
+    public String getGoogleMapsApiKey() {
         return sharedPreferences.getString("api", null);
     }
 

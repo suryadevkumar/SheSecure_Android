@@ -120,15 +120,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Load feedbacks
         loadFeedbacks();
-
-        // Check if we should track location
-        if (LocationHelper.shouldTrackLocation(this)) {
-            if (!LocationHelper.checkLocationPermissions(this)) {
-                LocationHelper.requestLocationPermissions(this);
-            } else {
-                LocationHelper.startLocationService(this);
-            }
-        }
     }
 
     private void setStatusBarColor() {
@@ -352,35 +343,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        if (requestCode == LocationHelper.LOCATION_PERMISSION_REQUEST_CODE) {
-            boolean allPermissionsGranted = true;
-            for (int result : grantResults) {
-                if (result != PackageManager.PERMISSION_GRANTED) {
-                    allPermissionsGranted = false;
-                    break;
-                }
-            }
-
-            if (allPermissionsGranted && LocationHelper.shouldTrackLocation(this)) {
-                LocationHelper.startLocationService(this);
-            } else {
-                Toast.makeText(this,
-                        "Location permissions are required for safety features",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (LocationHelper.shouldTrackLocation(this) &&
-                LocationHelper.checkLocationPermissions(this)) {
-            LocationHelper.startLocationService(this);
-        }
-    }
 }

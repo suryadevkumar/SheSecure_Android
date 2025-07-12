@@ -3,13 +3,10 @@ package com.example.shesecure.activities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import android.Manifest;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.LinearLayout;
@@ -17,20 +14,18 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shesecure.R;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class UserDashboardActivity extends BaseActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private FusedLocationProviderClient fusedLocationClient;
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private Marker userMarker;
 
     // Button states
     private boolean isSOSActive = false;
@@ -46,23 +41,41 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         setupButtons();
     }
 
+    @Override
+    protected void onLocationUpdated(@NonNull Location location) {
+        updateMapWithLocation(location);
+    }
+
     private void setupMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+    }
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+    private void updateMapWithLocation(Location location) {
+        if (mMap != null) {
+            LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+
+            if (userMarker == null) {
+                // Add new marker if doesn't exist
+                userMarker = mMap.addMarker(new MarkerOptions()
+                        .position(latLng)
+                        .title("Your Location"));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
+            } else {
+                // Update existing marker position
+                userMarker.setPosition(latLng);
+            }
+        }
     }
 
     private void setupButtons() {
         // Trusted Contacts Button
         CardView trustedContactsBtn = findViewById(R.id.trustedContactsBtn);
         trustedContactsBtn.setOnClickListener(v -> {
-            // Start TrustedContactsActivity
-            Intent intent = new Intent(UserDashboardActivity.this, EmergencyContactsActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, EmergencyContactsActivity.class));
         });
 
         // SOS Button
@@ -79,13 +92,28 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
 
         // Location Button
         CardView locationBtn = findViewById(R.id.locationBtn);
+        locationBtn.setOnClickListener(v -> {
+            if (!isLocationShared) {
+                isLoading = true;
+                updateLocationButton();
+                shareLiveLocation();
+            }
+        });
+
         // Helpline Button
         CardView helplineBtn = findViewById(R.id.helplineBtn);
         helplineBtn.setOnClickListener(v -> {
-            // Start HelplineActivity
-            Intent intent = new Intent(UserDashboardActivity.this, HelplineActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, HelplineActivity.class));
         });
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        // Set initial location if available
+        if (currentLocation != null) {
+            updateMapWithLocation(currentLocation);
+        }
     }
 
     private void updateSOSButton() {
@@ -127,104 +155,21 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void startSOS() {
-        // Implement actual SOS functionality here
-        // For now just showing a toast
         Toast.makeText(this, "Emergency SOS Activated", Toast.LENGTH_SHORT).show();
-
-        // You would typically:
-        // 1. Send emergency alerts to trusted contacts
-        // 2. Start sharing live location
-        // 3. Maybe play an alarm sound
+        // Implement actual SOS functionality
     }
 
     private void stopSOS() {
-        // Implement stop SOS functionality
         Toast.makeText(this, "Emergency SOS Deactivated", Toast.LENGTH_SHORT).show();
-
-        // You would typically:
-        // 1. Stop sending alerts
-        // 2. Stop sharing location
-        // 3. Stop any alarm sounds
+        // Implement stop SOS functionality
     }
 
-    private void handleLocationClick() {
-        // Check location permission first
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-
-            // Simulate location sharing starting (replace with actual implementation)
-            new Handler().postDelayed(() -> {
-                isLoading = false;
-                isLocationShared = true;
-                updateLocationButton();
-                Toast.makeText(this, "Live Location Sharing Started", Toast.LENGTH_SHORT).show();
-
-                // Actual implementation would:
-                // 1. Start sending location updates to server/contacts
-                // 2. Update UI accordingly
-            }, 1500);
-
-        } else {
-            // Request permission if not granted
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
+    private void shareLiveLocation() {
+        new Handler().postDelayed(() -> {
             isLoading = false;
+            isLocationShared = true;
             updateLocationButton();
-        }
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        enableMyLocation();
-    }
-
-    private void enableMyLocation() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            mMap.setMyLocationEnabled(true);
-            getLastKnownLocation();
-        } else {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        }
-    }
-
-    private void getLastKnownLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationClient.getLastLocation()
-                    .addOnSuccessListener(this, location -> {
-                        if (location != null && mMap != null) {
-                            LatLng currentLatLng = new LatLng(location.getLatitude(),
-                                    location.getLongitude());
-                            mMap.addMarker(new MarkerOptions()
-                                    .position(currentLatLng)
-                                    .title("Your Location"));
-                            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 15));
-                        }
-                    });
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                enableMyLocation();
-                if (isLoading) {
-                    // Retry location sharing if permission was just granted
-                    handleLocationClick();
-                }
-            } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
-                isLoading = false;
-                updateLocationButton();
-            }
-        }
+            Toast.makeText(this, "Live Location Sharing Started", Toast.LENGTH_SHORT).show();
+        }, 1500);
     }
 }

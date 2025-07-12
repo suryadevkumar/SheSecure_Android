@@ -11,7 +11,7 @@ public class ApiUtils {
         try {
             SecurePrefs securePrefs = new SecurePrefs(context);
             securePrefs.saveKeys();
-            String baseUrl = securePrefs.getAPI();
+            String baseUrl = securePrefs.getGoogleMapsApiKey();
             return RetrofitClient.getClient(baseUrl).create(ApiService.class);
         } catch (Exception e) {
             Toast.makeText(context, "Error initializing app", Toast.LENGTH_SHORT).show();

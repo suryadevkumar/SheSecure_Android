@@ -2,7 +2,6 @@ package com.example.shesecure.activities;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -27,10 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import android.Manifest;
-import android.location.LocationManager;
-import android.provider.Settings;
-import androidx.core.app.ActivityCompat;
 import androidx.core.view.GravityCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -56,7 +51,6 @@ import retrofit2.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
     private EditText etEmail;
     private LinearLayout layoutOTP, otpContainer;
     private Button btnSendOTP, btnLogin;
@@ -421,12 +415,7 @@ public class LoginActivity extends AppCompatActivity {
                             String lastName = user.optString("lastName", "");
                             String emailFromResponse = user.optString("email", "");
                             String userType = user.optString("userType", "");
-
-                            String profileImage = "";
-                            if (user.has("additionalDetails")) {
-                                JSONObject additional = user.getJSONObject("additionalDetails");
-                                profileImage = additional.optString("image", "");
-                            }
+                            String profileImage = user.optString("image", "");
 
                             // Store selected data in SharedPreferences
                             SharedPreferences preferences = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
@@ -442,7 +431,7 @@ public class LoginActivity extends AppCompatActivity {
                             editor.apply();
 
                             Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
-                            checkLocationAndProceed(); // Your next step
+                            proceedToDashboard();
                         }
                         else {
                             Toast.makeText(LoginActivity.this, "Invalid response format", Toast.LENGTH_SHORT).show();
@@ -464,57 +453,6 @@ public class LoginActivity extends AppCompatActivity {
                 Toast.makeText(LoginActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
-    }
-
-
-    private void checkLocationAndProceed() {
-        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-            showLocationEnableDialog();
-        } else {
-            checkLocationPermissions();
-        }
-    }
-
-    private void showLocationEnableDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle("Location Required")
-                .setMessage("SheSecure requires location access for your safety. Please enable location.")
-                .setPositiveButton("Enable", (dialog, which) -> {
-                    startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
-                    dialog.dismiss();
-                })
-                .setNegativeButton("Exit", (dialog, which) -> {
-                    finish();
-                })
-                .setCancelable(false)
-                .show();
-    }
-
-    private void checkLocationPermissions() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
-                != PackageManager.PERMISSION_GRANTED) {
-
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                    LOCATION_PERMISSION_REQUEST_CODE);
-        } else {
-            proceedToDashboard();
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                proceedToDashboard();
-            } else {
-                Toast.makeText(this, "Location permission denied", Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }
     }
 
     private void proceedToDashboard() {
