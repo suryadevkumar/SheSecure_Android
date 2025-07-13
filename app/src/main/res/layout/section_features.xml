@@ -50,7 +50,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pink_rounded"
+                    android:background="@drawable/bg_rounded"
+                    android:backgroundTint="@color/pink_50"
                     android:padding="8dp"
                     android:text="Stay Connected"
                     android:textColor="@color/black"
@@ -109,7 +110,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pink_rounded"
+                    android:background="@drawable/bg_rounded"
+                    android:backgroundTint="@color/pink_50"
                     android:padding="8dp"
                     android:text="Instant Emergency Alerts"
                     android:textColor="@color/black"
@@ -168,7 +170,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pink_rounded"
+                    android:background="@drawable/bg_rounded"
+                    android:backgroundTint="@color/pink_50"
                     android:padding="8dp"
                     android:text="Nearest Hospitals"
                     android:textColor="@color/black"
@@ -227,7 +230,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pink_rounded"
+                    android:background="@drawable/bg_rounded"
+                    android:backgroundTint="@color/pink_50"
                     android:padding="8dp"
                     android:text="Nearest Police Stations"
                     android:textColor="@color/black"
@@ -286,7 +290,8 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_pink_rounded"
+                    android:background="@drawable/bg_rounded"
+                    android:backgroundTint="@color/pink_50"
                     android:padding="8dp"
                     android:text="24/7 Guidance"
                     android:textColor="@color/black"

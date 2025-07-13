@@ -163,6 +163,32 @@
             android:textColor="@android:color/black" />
     </LinearLayout>
 
+    <!-- Helpline Numbers Option with Icon -->
+    <LinearLayout
+        android:id="@+id/optionCrimeReport"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:gravity="center_vertical"
+        android:background="?attr/selectableItemBackground">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/crime_report"
+            android:layout_marginEnd="16dp"
+            app:tint="@android:color/black" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Report Crime"
+            android:textSize="16sp"
+            android:textColor="@android:color/black" />
+    </LinearLayout>
+
     <!-- Customer care Option with Icon -->
     <LinearLayout
         android:id="@+id/optionCustomerSupport"

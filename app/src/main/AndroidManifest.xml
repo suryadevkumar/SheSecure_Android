@@ -3,9 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Network permissions -->
-    <uses-feature
-        android:name="android.hardware.telephony"
-        android:required="false" />
+    <uses-feature android:name="android.hardware.telephony" android:required="false" />
+    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -15,13 +14,14 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
-        android:label=""
+        android:label="SheSecure"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.SheSecure"
@@ -31,7 +31,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyALtZjhd6nlhEIX_EzVEqjPut7LOP2UyTw"/>
+            android:value="AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8"/>
 
         <activity
             android:name=".MainActivity"
@@ -42,6 +42,24 @@
             </intent-filter>
         </activity>
 
+        <service
+            android:name=".services.LocationService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
+        <receiver
+            android:name=".services.BootReceiver"
+            android:enabled="true"
+            android:exported="false">
+            <intent-filter android:priority="1000">
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.PACKAGE_REPLACED" />
+                <data android:scheme="package" />
+            </intent-filter>
+        </receiver>
+
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.LoginActivity" />
         <activity android:name=".activities.UserDashboardActivity"/>
@@ -51,6 +69,7 @@
         <activity android:name=".activities.EmergencyContactsActivity"/>
         <activity android:name=".activities.CustomerSupportActivity"/>
         <activity android:name=".activities.FeedbackActivity"/>
+        <activity android:name=".activities.CrimeReportActivity"/>
 
     </application>
 

@@ -1,9 +1,12 @@
 package com.example.shesecure.activities;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Location;
@@ -23,6 +26,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Observer;
 
@@ -48,6 +52,9 @@ public class BaseActivity extends AppCompatActivity {
     protected boolean isLocationRequired = false;
     protected LinearLayout mainContainer;
     protected View contentView;
+    private static final int LOCATION_PERMISSION_REQUEST_CODE = 1001;
+    private static final int BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE = 1002;
+    private boolean viewsInitialized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,7 +69,7 @@ public class BaseActivity extends AppCompatActivity {
 
     @Override
     public void setContentView(int layoutResID) {
-        // Main container
+        // Initialize main container
         mainContainer = new LinearLayout(this);
         mainContainer.setOrientation(LinearLayout.VERTICAL);
         mainContainer.setLayoutParams(new LinearLayout.LayoutParams(
@@ -75,7 +82,7 @@ public class BaseActivity extends AppCompatActivity {
             locationRequirementCard = (CardView) inflater.inflate(R.layout.location_requirement_card, mainContainer, false);
             mainContainer.addView(locationRequirementCard);
             setupLocationRequirementCard();
-            locationRequirementCard.setVisibility(View.GONE); // Initially hidden
+            locationRequirementCard.setVisibility(View.GONE);
         }
 
         // Add nav header
@@ -89,10 +96,125 @@ public class BaseActivity extends AppCompatActivity {
 
         super.setContentView(mainContainer);
         setupNavbar();
+        viewsInitialized = true;
 
-        // Check location immediately after setting up views
         if (isLocationRequired) {
-            checkLocationEnabled();
+            checkLocationPermissions();
+        }
+    }
+
+    private void checkLocationPermissions() {
+        if (!viewsInitialized) return;
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            // Request fine location permission (existing code stays same)
+            ActivityCompat.requestPermissions(
+                    this,
+                    new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                    LOCATION_PERMISSION_REQUEST_CODE
+            );
+        } else {
+            // Check for background location permission (Android 10+)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_BACKGROUND_LOCATION)
+                        != PackageManager.PERMISSION_GRANTED) {
+
+                    new AlertDialog.Builder(this)
+                            .setTitle("Background Location Permission")
+                            .setMessage("For continuous safety tracking, please allow location access 'All the time' in the next screen.")
+                            .setPositiveButton("OK", (dialog, which) -> {
+                                ActivityCompat.requestPermissions(
+                                        this,
+                                        new String[]{Manifest.permission.ACCESS_BACKGROUND_LOCATION},
+                                        BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE
+                                );
+                            })
+                            .create()
+                            .show();
+                } else {
+                    checkLocationEnabled();
+                }
+            } else {
+                checkLocationEnabled();
+            }
+        }
+    }
+
+    private void checkLocationEnabled() {
+        if (!viewsInitialized) return;
+
+        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+        boolean isLocationEnabled = false;
+        try {
+            isLocationEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
+                    lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+        } catch (Exception e) {
+            Log.e("LocationCheck", "Error checking location status", e);
+        }
+
+        if (isLocationEnabled) {
+            if (locationRequirementCard != null) {
+                locationRequirementCard.setVisibility(View.GONE);
+            }
+            enableAppFunctionality();
+
+            if (!LocationService.isServiceRunning()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    startForegroundService(new Intent(this, LocationService.class));
+                } else {
+                    startService(new Intent(this, LocationService.class));
+                }
+            }
+        } else {
+            if (locationRequirementCard != null) {
+                locationRequirementCard.setVisibility(View.VISIBLE);
+            }
+            disableAppFunctionality();
+            stopService(new Intent(this, LocationService.class));
+        }
+    }
+
+    private void enableAppFunctionality() {
+        if (mainContainer == null) return;
+
+        for (int i = 0; i < mainContainer.getChildCount(); i++) {
+            View child = mainContainer.getChildAt(i);
+            if (child != locationRequirementCard) {
+                child.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void disableAppFunctionality() {
+        if (mainContainer == null) return;
+
+        for (int i = 0; i < mainContainer.getChildCount(); i++) {
+            View child = mainContainer.getChildAt(i);
+            if (child != locationRequirementCard) {
+                child.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkLocationPermissions(); // This will check for background permission
+            } else {
+                Toast.makeText(this, "Location permission is required for safety tracking", Toast.LENGTH_LONG).show();
+            }
+        } else if (requestCode == BACKGROUND_LOCATION_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                checkLocationEnabled();
+            } else {
+                // Still proceed but inform user
+                Toast.makeText(this, "Background location will improve safety tracking", Toast.LENGTH_LONG).show();
+                checkLocationEnabled();
+            }
         }
     }
 
@@ -120,63 +242,14 @@ public class BaseActivity extends AppCompatActivity {
         }
     }
 
+    protected void onLocationUpdated(@NonNull Location location) {
+        // To be overridden by child activities
+    }
+
     private void setupLocationRequirementCard() {
         locationRequirementCard.findViewById(R.id.btnEnableLocation).setOnClickListener(v -> {
             startActivity(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS));
         });
-    }
-
-    private void checkLocationEnabled() {
-        LocationManager lm = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-        boolean isLocationEnabled = false;
-        try {
-            isLocationEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER) ||
-                    lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
-        } catch (Exception e) {
-            Log.e("LocationCheck", "Error checking location status", e);
-        }
-
-        if (isLocationEnabled) {
-            // Location is enabled - show all content except warning card
-            if (locationRequirementCard != null) {
-                locationRequirementCard.setVisibility(View.GONE);
-            }
-            enableAppFunctionality();
-            if (!LocationService.isServiceRunning()) {
-                startService(new Intent(this, LocationService.class));
-            }
-        } else {
-            // Location is disabled - show only warning card
-            if (locationRequirementCard != null) {
-                locationRequirementCard.setVisibility(View.VISIBLE);
-            }
-            disableAppFunctionality();
-            stopService(new Intent(this, LocationService.class));
-        }
-    }
-
-    private void enableAppFunctionality() {
-        // Show all views except the location requirement card
-        for (int i = 0; i < mainContainer.getChildCount(); i++) {
-            View child = mainContainer.getChildAt(i);
-            if (child != locationRequirementCard) {
-                child.setVisibility(View.VISIBLE);
-            }
-        }
-    }
-
-    private void disableAppFunctionality() {
-        // Hide all views except the location requirement card
-        for (int i = 0; i < mainContainer.getChildCount(); i++) {
-            View child = mainContainer.getChildAt(i);
-            if (child != locationRequirementCard) {
-                child.setVisibility(View.GONE);
-            }
-        }
-    }
-
-    protected void onLocationUpdated(@NonNull Location location) {
-        // Can be overridden by child activities
     }
 
     private void setStatusBarColor() {
@@ -190,7 +263,6 @@ public class BaseActivity extends AppCompatActivity {
         CircleImageView profileImage = navHeader.findViewById(R.id.profileImage);
         Button sosButton = navHeader.findViewById(R.id.sosButton);
 
-        // SOS button visibility
         sosButton.setVisibility(userType != null && userType.equals("User") ? View.VISIBLE : View.GONE);
         sosButton.setOnClickListener(v -> triggerSOS());
 
@@ -219,39 +291,37 @@ public class BaseActivity extends AppCompatActivity {
         profilePopupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         profilePopupWindow.setOutsideTouchable(true);
 
-        // Initialize popup views
         TextView tvUserName = popupView.findViewById(R.id.tvUserName);
         TextView tvUserEmail = popupView.findViewById(R.id.tvUserEmail);
         LinearLayout optionDashboard = popupView.findViewById(R.id.optionDashboard);
         LinearLayout optionMyProfile = popupView.findViewById(R.id.optionMyProfile);
         LinearLayout optionEditProfile = popupView.findViewById(R.id.optionEditProfile);
         LinearLayout optionHelpline = popupView.findViewById(R.id.optionHelpline);
+        LinearLayout optionCrimeReport = popupView.findViewById(R.id.optionCrimeReport);
         LinearLayout optionCustomerSupport = popupView.findViewById(R.id.optionCustomerSupport);
         LinearLayout optionFeedback = popupView.findViewById(R.id.optionFeedback);
         LinearLayout optionEmergencyContacts = popupView.findViewById(R.id.optionEmergencyContacts);
         LinearLayout optionLogout = popupView.findViewById(R.id.optionLogout);
 
-        // Set user data
         SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
         tvUserName.setText(prefs.getString("firstName", "") + " " + prefs.getString("lastName", ""));
         tvUserEmail.setText(prefs.getString("email", "example@example.com"));
 
-        // Set click listeners
         optionDashboard.setOnClickListener(v -> navigateTo(UserDashboardActivity.class));
         optionMyProfile.setOnClickListener(v -> navigateTo(ProfileActivity.class));
         optionEditProfile.setOnClickListener(v -> navigateTo(EditProfileActivity.class));
         optionHelpline.setOnClickListener(v -> navigateTo(HelplineActivity.class));
+        optionCrimeReport.setOnClickListener(v -> navigateTo(CrimeReportActivity.class));
         optionCustomerSupport.setOnClickListener(v -> navigateTo(CustomerSupportActivity.class));
         optionFeedback.setOnClickListener(v -> navigateTo(FeedbackActivity.class));
         optionEmergencyContacts.setOnClickListener(v -> navigateTo(EmergencyContactsActivity.class));
         optionLogout.setOnClickListener(v -> logout());
 
-        // Show popup
         profilePopupWindow.showAsDropDown(anchor, -200, 45);
     }
 
     private void navigateTo(Class<?> cls) {
-        if (profilePopupWindow != null) {
+        if (profilePopupWindow != null && profilePopupWindow.isShowing()) {
             profilePopupWindow.dismiss();
         }
         startActivity(new Intent(this, cls));

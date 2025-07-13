@@ -114,6 +114,35 @@ public interface ApiService {
             @Body RequestBody feedbackData
     );
 
+    @GET("crime/my-reports")
+    Call<ResponseBody> getUserCrimeReports(@Header("Authorization") String token);
+
+    @GET("crime/getAllReports")
+    Call<ResponseBody> getAllCrimeReports(@Header("Authorization") String token);
+
+    @Multipart
+    @POST("crime/report-crime")
+    Call<ResponseBody> submitCrimeReport(
+            @Header("Authorization") String token,
+            @Part("typeOfCrime") RequestBody typeOfCrime,
+            @Part("description") RequestBody description,
+            @Part("dateOfCrime") RequestBody dateOfCrime,
+            @Part("location") RequestBody location,
+            @Part MultipartBody.Part FIR
+    );
+
+    @PUT("crime/verify-report/{reportId}")
+    Call<ResponseBody> verifyCrimeReport(
+            @Header("Authorization") String token,
+            @Path("reportId") String reportId
+    );
+
+    @DELETE("crime/remove-report/{reportId}")
+    Call<ResponseBody> deleteCrimeReport(
+            @Header("Authorization") String token,
+            @Path("reportId") String reportId
+    );
+
     // Crime interaction endpoints
     @GET("api/crimeInteraction/stats")
     Call<ResponseBody> getCrimeInteractionStats(

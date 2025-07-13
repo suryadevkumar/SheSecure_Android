@@ -1,19 +1,24 @@
 package com.example.shesecure.activities;
 
+import android.Manifest;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.shesecure.R;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
@@ -21,13 +26,13 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 
 public class UserDashboardActivity extends BaseActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
     private Marker userMarker;
-
-    // Button states
+    private FusedLocationProviderClient fusedLocationClient;
     private boolean isSOSActive = false;
     private boolean isLocationShared = false;
     private boolean isLoading = false;
@@ -37,12 +42,14 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         super.onCreate(savedInstanceState);
         setContentView(R.layout.user_dashboard);
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         setupMap();
         setupButtons();
     }
 
     @Override
     protected void onLocationUpdated(@NonNull Location location) {
+        Log.d("LOCATION_UPDATE", "New location: " + location.getLatitude() + ", " + location.getLongitude());
         updateMapWithLocation(location);
     }
 
@@ -54,31 +61,53 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         }
     }
 
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+
+        try {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                    == PackageManager.PERMISSION_GRANTED) {
+                mMap.setMyLocationEnabled(true);
+            }
+
+            if (currentLocation != null) {
+                updateMapWithLocation(currentLocation);
+            } else {
+                fusedLocationClient.getLastLocation()
+                        .addOnSuccessListener(this, location -> {
+                            if (location != null) {
+                                currentLocation = location;
+                                updateMapWithLocation(location);
+                            }
+                        });
+            }
+        } catch (SecurityException e) {
+            Log.e("MAP_ERROR", "SecurityException: " + e.getMessage());
+        }
+    }
+
     private void updateMapWithLocation(Location location) {
         if (mMap != null) {
             LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
 
             if (userMarker == null) {
-                // Add new marker if doesn't exist
                 userMarker = mMap.addMarker(new MarkerOptions()
                         .position(latLng)
                         .title("Your Location"));
                 mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 15));
             } else {
-                // Update existing marker position
                 userMarker.setPosition(latLng);
             }
         }
     }
 
     private void setupButtons() {
-        // Trusted Contacts Button
         CardView trustedContactsBtn = findViewById(R.id.trustedContactsBtn);
         trustedContactsBtn.setOnClickListener(v -> {
             startActivity(new Intent(this, EmergencyContactsActivity.class));
         });
 
-        // SOS Button
         CardView sosBtn = findViewById(R.id.sosBtn);
         sosBtn.setOnClickListener(v -> {
             isSOSActive = !isSOSActive;
@@ -90,7 +119,6 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
             }
         });
 
-        // Location Button
         CardView locationBtn = findViewById(R.id.locationBtn);
         locationBtn.setOnClickListener(v -> {
             if (!isLocationShared) {
@@ -100,20 +128,10 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
             }
         });
 
-        // Helpline Button
         CardView helplineBtn = findViewById(R.id.helplineBtn);
         helplineBtn.setOnClickListener(v -> {
             startActivity(new Intent(this, HelplineActivity.class));
         });
-    }
-
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-        // Set initial location if available
-        if (currentLocation != null) {
-            updateMapWithLocation(currentLocation);
-        }
     }
 
     private void updateSOSButton() {

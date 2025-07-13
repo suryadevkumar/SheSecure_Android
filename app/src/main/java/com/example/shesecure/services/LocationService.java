@@ -1,12 +1,13 @@
 package com.example.shesecure.services;
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
 import android.os.IBinder;
@@ -14,9 +15,11 @@ import android.os.Looper;
 import android.util.Log;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.shesecure.R;
+import com.example.shesecure.utils.ApiUtils;
 import com.example.shesecure.utils.SecurePrefs;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -24,186 +27,320 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.Priority;
-import org.json.JSONException;
-import org.json.JSONObject;
-import java.io.IOException;
 
+import org.json.JSONObject;
+
+import java.util.concurrent.TimeUnit;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
-import okhttp3.ResponseBody;
 import retrofit2.Call;
-import retrofit2.Callback;
 
 public class LocationService extends Service {
 
-    // Location tracking components
+    private static final String TAG = "LocationService";
+    private static final String CHANNEL_ID = "location_channel";
+    private static final int NOTIFICATION_ID = 1;
+
+    // Location update intervals
+    private static final long UPDATE_INTERVAL = 10000; // 10 seconds
+    private static final long FASTEST_UPDATE_INTERVAL = 5000; // 5 seconds
+    private static final float UPDATE_DISTANCE = 10; // 10 meters
+
     private FusedLocationProviderClient fusedLocationClient;
     private LocationCallback locationCallback;
+    private OkHttpClient httpClient;
+    private ApiService apiService;
 
-    // Location data holders
+    // Static variables for global access
     private static Location staticCurrentLocation;
     private static final MutableLiveData<Location> liveLocation = new MutableLiveData<>();
+    private static volatile boolean isRunning = false;
 
-    // Configuration
-    private static final long UPDATE_INTERVAL = 10000; // 10 seconds
-    private static final float UPDATE_DISTANCE = 10; // 10 meters
-    private static final long BACKEND_INTERVAL = 30000; // 30 seconds
-    private long lastBackendUpdate = 0;
-    private OkHttpClient httpClient = new OkHttpClient();
-    private String mapsApiKey;
-
-    public static boolean isRunning = false;
+    // Instance variables
+    private Location lastSavedLocation;
+    private long lastUpdateTime = 0;
+    private boolean isFirstLocationUpdate = true;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        try {
-            mapsApiKey = new SecurePrefs(this).getGoogleMapsApiKey();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Log.d(TAG, "LocationService onCreate");
+
+        // Initialize HTTP client
+        httpClient = new OkHttpClient.Builder()
+                .connectTimeout(30, TimeUnit.SECONDS)
+                .readTimeout(30, TimeUnit.SECONDS)
+                .writeTimeout(30, TimeUnit.SECONDS)
+                .build();
+
+        // Initialize API service
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
+
+        // Initialize location client
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        setupLocationCallback();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        if (!isUser()) {
+        Log.d(TAG, "LocationService onStartCommand");
+
+        // Check if user is authorized and has permissions
+        if (!isUserAuthorized() || !hasLocationPermission()) {
+            Log.w(TAG, "User not authorized or missing permissions");
             stopSelf();
             return START_NOT_STICKY;
         }
-        isRunning = true;
+
+        // Start foreground service
         startForegroundService();
+
+        // Start location updates
         startLocationUpdates();
-        return START_STICKY;
+
+        isRunning = true;
+        return START_STICKY; // Service will be restarted if killed
     }
 
-    private boolean isUser() {
+    private boolean isUserAuthorized() {
         SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        return "User".equals(prefs.getString("userType", null));
+        String userType = prefs.getString("userType", null);
+        String token = prefs.getString("token", null);
+
+        return "User".equals(userType) && token != null && !token.isEmpty();
+    }
+
+    private boolean hasLocationPermission() {
+        return ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED;
     }
 
     private void startForegroundService() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    "location_channel",
-                    "Location Tracking",
-                    NotificationManager.IMPORTANCE_LOW
-            );
-            getSystemService(NotificationManager.class).createNotificationChannel(channel);
-        }
+        createNotificationChannel();
 
-        startForeground(1, new NotificationCompat.Builder(this, "location_channel")
-                .setContentTitle(getString(R.string.app_name) + " Location Tracking")
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("SheSecure Location Tracking")
                 .setContentText("Tracking your location for safety")
                 .setSmallIcon(R.drawable.sos_icon)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
-                .build());
+                .setOngoing(true)
+                .setShowWhen(false)
+                .build();
+
+        startForeground(NOTIFICATION_ID, notification);
     }
 
-    private void startLocationUpdates() {
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+    private void createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            NotificationChannel channel = new NotificationChannel(
+                    CHANNEL_ID,
+                    "Location Tracking",
+                    NotificationManager.IMPORTANCE_LOW
+            );
+            channel.setDescription("Continuous location tracking for safety");
+            channel.setShowBadge(false);
 
+            NotificationManager manager = getSystemService(NotificationManager.class);
+            if (manager != null) {
+                manager.createNotificationChannel(channel);
+            }
+        }
+    }
+
+    private void setupLocationCallback() {
         locationCallback = new LocationCallback() {
             @Override
             public void onLocationResult(LocationResult result) {
-                if (result == null) return;
-                for (Location location : result.getLocations()) {
-                    updateLocation(location);
+                if (result == null || result.getLocations().isEmpty()) {
+                    Log.w(TAG, "Location result is null or empty");
+                    return;
+                }
+
+                Location location = result.getLastLocation();
+                if (location != null) {
+                    handleLocationUpdate(location);
                 }
             }
         };
+    }
+
+    private void startLocationUpdates() {
+        if (!hasLocationPermission()) {
+            Log.e(TAG, "Location permission not granted");
+            return;
+        }
+
+        LocationRequest locationRequest = new LocationRequest.Builder(
+                Priority.PRIORITY_HIGH_ACCURACY, UPDATE_INTERVAL)
+                .setMinUpdateIntervalMillis(FASTEST_UPDATE_INTERVAL)
+                .setMinUpdateDistanceMeters(UPDATE_DISTANCE)
+                .setWaitForAccurateLocation(true)
+                .build();
 
         try {
             fusedLocationClient.requestLocationUpdates(
-                    new LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, UPDATE_INTERVAL)
-                            .setMinUpdateDistanceMeters(UPDATE_DISTANCE)
-                            .build(),
+                    locationRequest,
                     locationCallback,
                     Looper.getMainLooper()
             );
+            Log.d(TAG, "Location updates started");
         } catch (SecurityException e) {
-            Log.e("LocationService", "Location permission missing", e);
+            Log.e(TAG, "Location permission missing", e);
             stopSelf();
         }
     }
 
-    private void updateLocation(Location location) {
+    private void handleLocationUpdate(Location location) {
+        if (location == null) return;
+
+        // Update static location for global access
         staticCurrentLocation = location;
+
+        // Post to LiveData for observers
         liveLocation.postValue(location);
 
+        Log.d(TAG, "Location updated: " + location.getLatitude() + ", " + location.getLongitude());
+
+        // Check if we should save this location
+        if (shouldSaveLocation(location)) {
+            saveLocationToBackend(location);
+        }
+    }
+
+    private boolean shouldSaveLocation(Location newLocation) {
+        if (isFirstLocationUpdate) {
+            return true;
+        }
+
+        if (lastSavedLocation == null) {
+            return true;
+        }
+
+        // Check if user has moved significant distance
+        float distance = lastSavedLocation.distanceTo(newLocation);
+        if (distance >= UPDATE_DISTANCE) {
+            return true;
+        }
+
+        // Check if enough time has passed (backup condition)
         long currentTime = System.currentTimeMillis();
-        if (currentTime - lastBackendUpdate >= BACKEND_INTERVAL) {
-            new Thread(() -> {
-                try {
-                    PlaceDetails place = getPlaceDetails(location.getLatitude(), location.getLongitude());
-                    sendToBackend(location, currentTime, place);
-                } catch (Exception e) {
-                    Log.e("LocationService", "Error processing location", e);
-                    sendToBackend(location, currentTime, new PlaceDetails("Unknown", "Unknown"));
+        long timeDiff = currentTime - lastUpdateTime;
+        if (timeDiff >= UPDATE_INTERVAL * 3) { // 60 seconds
+            return true;
+        }
+
+        return false;
+    }
+
+    private void saveLocationToBackend(Location location) {
+        new Thread(() -> {
+            try {
+                long currentTime = System.currentTimeMillis();
+                long startTime = isFirstLocationUpdate ? currentTime : lastUpdateTime;
+
+                // Get place details
+                PlaceDetails placeDetails = getPlaceDetails(location.getLatitude(), location.getLongitude());
+
+                // Get auth token
+                SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
+                String token = prefs.getString("token", "");
+
+                if (token.isEmpty()) {
+                    Log.e(TAG, "No auth token found");
+                    return;
                 }
-            }).start();
-            lastBackendUpdate = currentTime;
-        }
-    }
 
-    private PlaceDetails getPlaceDetails(double lat, double lng) throws IOException, JSONException {
-        Request request = new Request.Builder()
-                .url("https://maps.googleapis.com/maps/api/geocode/json?latlng=" + lat + "," + lng + "&key=" + mapsApiKey)
-                .build();
+                // Prepare location data
+                JSONObject locationData = new JSONObject();
+                locationData.put("latitude", location.getLatitude());
+                locationData.put("longitude", location.getLongitude());
+                locationData.put("displayName", placeDetails.displayName);
+                locationData.put("formattedAddress", placeDetails.formattedAddress);
+                locationData.put("startTime", startTime);
+                locationData.put("endTime", currentTime);
 
-        try (Response response = httpClient.newCall(request).execute()) {
-            JSONObject json = new JSONObject(response.body().string());
-            if (json.getString("status").equals("OK")) {
-                JSONObject result = json.getJSONArray("results").getJSONObject(0);
-                return new PlaceDetails(
-                        result.getJSONArray("address_components").getJSONObject(0).optString("long_name", "Unknown"),
-                        result.optString("formatted_address", "Unknown")
+                RequestBody body = RequestBody.create(
+                        MediaType.parse("application/json"),
+                        locationData.toString()
                 );
+
+                // Make API call
+                apiService.saveUserLocation("Bearer " + token, body).enqueue(
+                        new retrofit2.Callback<okhttp3.ResponseBody>() {
+                            @Override
+                            public void onResponse(Call<okhttp3.ResponseBody> call,
+                                                   retrofit2.Response<okhttp3.ResponseBody> response) {
+                                if (response.isSuccessful()) {
+                                    Log.d(TAG, "Location saved successfully");
+                                    lastSavedLocation = location;
+                                    lastUpdateTime = currentTime;
+                                    isFirstLocationUpdate = false;
+                                } else {
+                                    Log.e(TAG, "Failed to save location: " + response.code());
+                                }
+                            }
+
+                            @Override
+                            public void onFailure(Call<okhttp3.ResponseBody> call, Throwable t) {
+                                Log.e(TAG, "Error saving location", t);
+                            }
+                        });
+
+            } catch (Exception e) {
+                Log.e(TAG, "Error processing location", e);
             }
-            return new PlaceDetails("Unknown", "Unknown");
-        }
+        }).start();
     }
 
-    private void sendToBackend(Location location, long time, PlaceDetails place) {
+    private PlaceDetails getPlaceDetails(double lat, double lng) {
         try {
-            SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
+            SecurePrefs securePrefs = new SecurePrefs(this);
+            String mapsApiKey = securePrefs.getGoogleMapsApiKey();
 
-            String baseUrl = new SecurePrefs(this).getGoogleMapsApiKey();
-            ApiService api = RetrofitClient.getClient(baseUrl).create(ApiService.class);
+            if (mapsApiKey.isEmpty()) {
+                Log.w(TAG, "Maps API key not found");
+                return new PlaceDetails("Unknown", "Unknown Location");
+            }
 
-            api.saveUserLocation(
-                    "Bearer " + prefs.getString("token", ""),
-                    RequestBody.create(
-                            MediaType.parse("application/json"),
-                            new JSONObject()
-                                    .put("latitude", location.getLatitude())
-                                    .put("longitude", location.getLongitude())
-                                    .put("displayName", place.displayName)
-                                    .put("formattedAddress", place.formattedAddress)
-                                    .put("startTime", time - BACKEND_INTERVAL)
-                                    .put("endTime", time)
-                                    .toString()
-                    )
-            ).enqueue(new Callback<ResponseBody>() {
-                @Override
-                public void onResponse(Call<ResponseBody> call, retrofit2.Response<ResponseBody> response) {
-                    if (!response.isSuccessful()) {
-                        Log.e("LocationService", "Failed to save location: " + response.code());
+            String url = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" +
+                    lat + "," + lng + "&key=" + mapsApiKey;
+
+            Request request = new Request.Builder()
+                    .url(url)
+                    .build();
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    JSONObject json = new JSONObject(response.body().string());
+
+                    if ("OK".equals(json.getString("status"))) {
+                        JSONObject result = json.getJSONArray("results").getJSONObject(0);
+
+                        String displayName = "Unknown";
+                        if (result.has("address_components") &&
+                                result.getJSONArray("address_components").length() > 0) {
+                            displayName = result.getJSONArray("address_components")
+                                    .getJSONObject(0).getString("long_name");
+                        }
+
+                        String formattedAddress = result.optString("formatted_address", "Unknown Location");
+
+                        return new PlaceDetails(displayName, formattedAddress);
                     }
                 }
-
-                @Override
-                public void onFailure(Call<ResponseBody> call, Throwable t) {
-                    Log.e("LocationService", "Backend error", t);
-                }
-            });
+            }
         } catch (Exception e) {
-            Log.e("LocationService", "Error sending to backend", e);
+            Log.e(TAG, "Error getting place details", e);
         }
+
+        return new PlaceDetails("Unknown", "Unknown Location");
     }
 
+    // Static methods for global access
     public static Location getCurrentLocation() {
         return staticCurrentLocation;
     }
@@ -212,12 +349,21 @@ public class LocationService extends Service {
         return liveLocation;
     }
 
+    public static boolean isServiceRunning() {
+        return isRunning;
+    }
+
     @Override
     public void onDestroy() {
+        Log.d(TAG, "LocationService onDestroy");
+
         isRunning = false;
+
+        // Stop location updates
         if (fusedLocationClient != null && locationCallback != null) {
             fusedLocationClient.removeLocationUpdates(locationCallback);
         }
+
         super.onDestroy();
     }
 
@@ -227,10 +373,7 @@ public class LocationService extends Service {
         return null;
     }
 
-    public static boolean isServiceRunning() {
-        return isRunning;
-    }
-
+    // Helper class for place details
     private static class PlaceDetails {
         final String displayName;
         final String formattedAddress;

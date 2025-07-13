@@ -8,7 +8,6 @@ import androidx.security.crypto.MasterKey;
 public class SecurePrefs {
 
     private static final String PREF_NAME = "secure_prefs";
-
     private final SharedPreferences sharedPreferences;
 
     public SecurePrefs(Context context) throws Exception {
@@ -25,16 +24,18 @@ public class SecurePrefs {
         );
     }
 
-    // Save keys
-    public void saveKeys() {
+    public void saveKeys(String apiBaseUrl, String mapsApiKey) {
         sharedPreferences.edit()
-                .putString("api", "http://10.0.2.2:3000/api/")
+                .putString("api_base_url", apiBaseUrl)
+                .putString("maps_api_key", mapsApiKey)
                 .apply();
     }
 
-    // Access keys
-    public String getGoogleMapsApiKey() {
-        return sharedPreferences.getString("api", null);
+    public String getApiBaseUrl() {
+        return sharedPreferences.getString("api_base_url", "http://10.0.2.2:3000/api/");
     }
 
+    public String getGoogleMapsApiKey() {
+        return sharedPreferences.getString("maps_api_key", "");
+    }
 }
