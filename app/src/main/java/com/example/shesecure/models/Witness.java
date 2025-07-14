@@ -11,11 +11,11 @@ public class Witness {
     private String photoUrl;
 
     public Witness(JSONObject json) throws JSONException {
-        this.name = json.optString("name", "Unknown");
-        this.gender = json.optString("gender", "Unknown");
-        this.contactNumber = json.optString("contactNumber", "");
-        this.address = json.optString("address", "");
-        this.photoUrl = json.optString("photoUrl", "");
+        this.name = json.optString("witnessName", "Unknown");
+        this.gender = json.optString("witnessGender", "Unknown");
+        this.contactNumber = json.optString("witnessContactNumber", "");
+        this.address = json.optString("witnessAddress", "");
+        this.photoUrl = json.optString("witnessPhoto", "");
     }
 
     // Getters

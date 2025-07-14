@@ -17,7 +17,6 @@ public class CrimeReport implements Serializable {
     private String typeOfCrime;
     private String description;
     private String status;
-    private String dateOfCrime;
     private String createdAt;
     private String firUrl;
     private List<String> photoUrls = new ArrayList<>();
@@ -32,11 +31,10 @@ public class CrimeReport implements Serializable {
         this.typeOfCrime = json.getString("typeOfCrime");
         this.description = json.getString("description");
         this.status = json.getString("status");
-        this.dateOfCrime = json.getString("dateOfCrime");
         this.createdAt = json.getString("createdAt");
         this.firUrl = json.optString("FIR");
 
-        // Parse arrays
+        // Parse crime photos
         JSONArray photosArray = json.optJSONArray("crimePhotos");
         if (photosArray != null) {
             for (int i = 0; i < photosArray.length(); i++) {
@@ -44,6 +42,7 @@ public class CrimeReport implements Serializable {
             }
         }
 
+        // Parse crime videos
         JSONArray videosArray = json.optJSONArray("crimeVideos");
         if (videosArray != null) {
             for (int i = 0; i < videosArray.length(); i++) {
@@ -52,16 +51,16 @@ public class CrimeReport implements Serializable {
         }
 
         // Parse location
-        if (json.has("location")) {
+        if (json.has("location") && !json.isNull("location")) {
             this.location = new ReportLocation(json.getJSONObject("location"));
         }
 
         // Parse assigned admin
-        if (json.has("assignedAdmin")) {
+        if (json.has("assignedAdmin") && !json.isNull("assignedAdmin")) {
             this.assignedAdmin = new User(json.getJSONObject("assignedAdmin"));
         }
 
-        // Parse suspects and witnesses
+        // Parse suspects
         JSONArray suspectsArray = json.optJSONArray("suspects");
         if (suspectsArray != null) {
             for (int i = 0; i < suspectsArray.length(); i++) {
@@ -69,6 +68,7 @@ public class CrimeReport implements Serializable {
             }
         }
 
+        // Parse witnesses
         JSONArray witnessesArray = json.optJSONArray("witnesses");
         if (witnessesArray != null) {
             for (int i = 0; i < witnessesArray.length(); i++) {
@@ -94,7 +94,6 @@ public class CrimeReport implements Serializable {
     public String getTypeOfCrime() { return typeOfCrime; }
     public String getDescription() { return description; }
     public String getStatus() { return status; }
-    public String getDateOfCrime() { return dateOfCrime; }
     public String getCreatedAt() { return createdAt; }
     public String getFirUrl() { return firUrl; }
     public List<String> getPhotoUrls() { return photoUrls; }

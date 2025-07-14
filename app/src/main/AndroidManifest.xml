@@ -70,6 +70,8 @@
         <activity android:name=".activities.CustomerSupportActivity"/>
         <activity android:name=".activities.FeedbackActivity"/>
         <activity android:name=".activities.CrimeReportActivity"/>
+        <activity android:name=".activities.FullScreenImageActivity"/>
+        <activity android:name=".activities.VideoPlayerActivity"/>
 
     </application>
 
