@@ -123,12 +123,19 @@ public interface ApiService {
     @Multipart
     @POST("crime/report-crime")
     Call<ResponseBody> submitCrimeReport(
-            @Header("Authorization") String token,
             @Part("typeOfCrime") RequestBody typeOfCrime,
             @Part("description") RequestBody description,
             @Part("dateOfCrime") RequestBody dateOfCrime,
-            @Part("location") RequestBody location,
-            @Part MultipartBody.Part FIR
+            @Part("latitude") RequestBody latitude,
+            @Part("longitude") RequestBody longitude,
+            @Part("address") RequestBody address,
+            @Part MultipartBody.Part FIR,
+            @Part List<MultipartBody.Part> photos,
+            @Part List<MultipartBody.Part> videos,
+            @Part("suspects") RequestBody suspects,
+            @Part List<MultipartBody.Part> suspectPhotos,
+            @Part("witnesses") RequestBody witnesses,
+            @Part List<MultipartBody.Part> witnessPhotos
     );
 
     @PUT("crime/verify-report/{reportId}")

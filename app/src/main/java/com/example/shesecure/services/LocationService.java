@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import com.example.shesecure.R;
+import com.example.shesecure.SheSecureApp;
 import com.example.shesecure.utils.ApiUtils;
 import com.example.shesecure.utils.SecurePrefs;
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -298,7 +299,7 @@ public class LocationService extends Service {
 
     private PlaceDetails getPlaceDetails(double lat, double lng) {
         try {
-            SecurePrefs securePrefs = new SecurePrefs(this);
+            SecurePrefs securePrefs = ((SheSecureApp) getApplication()).getSecurePrefs();
             String mapsApiKey = securePrefs.getGoogleMapsApiKey();
 
             if (mapsApiKey.isEmpty()) {

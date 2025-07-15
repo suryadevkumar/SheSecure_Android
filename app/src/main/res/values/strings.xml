@@ -38,4 +38,64 @@
         <item>Counsellor</item>
         <item>Admin</item>
     </string-array>
+
+    <string name="select_crime_type">Select crime type</string>
+    <string name="description">Description</string>
+    <string name="date_of_crime">Date of crime</string>
+    <string name="location">Location</string>
+    <string name="photo_evidence_count">%d photos selected</string>
+    <string name="video_evidence_count">%d videos selected</string>
+
+    <!-- Crime types array -->
+    <string-array name="crime_types">
+        <item>Select Crime Type</item>
+        <item>Assault</item>
+        <item>Homicide</item>
+        <item>Kidnapping</item>
+        <item>Domestic Violence</item>
+        <item>Robbery</item>
+        <item>Burglary</item>
+        <item>Theft</item>
+        <item>Vandalism</item>
+        <item>Arson</item>
+        <item>Hacking</item>
+        <item>Online Fraud</item>
+        <item>Cyberbullying</item>
+        <item>Identity Theft</item>
+        <item>Fraud</item>
+        <item>Money Laundering</item>
+        <item>Bribery</item>
+        <item>Counterfeiting</item>
+        <item>Drug Trafficking</item>
+        <item>Illegal Possession of Drugs</item>
+        <item>Public Intoxication</item>
+        <item>Sexual Harassment</item>
+        <item>Rape</item>
+        <item>Human Trafficking</item>
+        <item>Child Exploitation</item>
+        <item>Harassment</item>
+        <item>Stalking</item>
+        <item>Trespassing</item>
+        <item>Extortion</item>
+        <item>Other</item>
+    </string-array>
+
+    <string name="select_gender">Select gender</string>
+    <string name="select">Select</string>
+    <string name="witnesses">Witnesses</string>
+    <string name="add_witness">Add Witness</string>
+    <string name="safety_tips">Safety Tips</string>
+    <string name="safety_tip_1">1. If you\'re in immediate danger, call emergency services first</string>
+    <string name="safety_tip_2">2. Provide as much detail as possible without compromising your safety</string>
+    <string name="safety_tip_3">3. Your report will be shared with nearby users to alert them</string>
+    <string name="safety_tip_4">4. You can choose to report anonymously if needed</string>
+    <string name="submit_report">Submit Report</string>
+
+    <!-- Gender options -->
+    <string-array name="gender_options">
+        <item>Select gender</item>
+        <item>Male</item>
+        <item>Female</item>
+        <item>Other</item>
+    </string-array>
 </resources>

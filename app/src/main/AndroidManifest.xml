@@ -17,6 +17,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
+        android:name=".SheSecureApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -31,7 +32,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8"/>
+            android:value="AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8" />
 
         <activity
             android:name=".MainActivity"
@@ -72,6 +73,7 @@
         <activity android:name=".activities.CrimeReportActivity"/>
         <activity android:name=".activities.FullScreenImageActivity"/>
         <activity android:name=".activities.VideoPlayerActivity"/>
+        <activity android:name=".activities.CrimeReportSubmissionActivity"/>
 
     </application>
 

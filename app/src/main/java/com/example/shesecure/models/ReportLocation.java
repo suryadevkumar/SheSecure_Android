@@ -1,8 +1,8 @@
 package com.example.shesecure.models;
 
+import android.net.Uri;
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.io.Serializable;
 
 public class ReportLocation implements Serializable {
@@ -15,7 +15,9 @@ public class ReportLocation implements Serializable {
     private String endTime;
     private String createdAt;
     private String updatedAt;
+    private Uri mapImageUri; // New field for local image URI
 
+    // Existing constructor
     public ReportLocation(JSONObject json) throws JSONException {
         this.id = json.optString("_id", "");
         this.latitude = json.getDouble("latitude");
@@ -28,6 +30,14 @@ public class ReportLocation implements Serializable {
         this.updatedAt = json.optString("updatedAt", "");
     }
 
+    // New constructor for local use
+    public ReportLocation(double latitude, double longitude, String address, Uri mapImageUri) {
+        this.latitude = latitude;
+        this.longitude = longitude;
+        this.formattedAddress = address;
+        this.mapImageUri = mapImageUri;
+    }
+
     // Getters
     public String getId() { return id; }
     public double getLatitude() { return latitude; }
@@ -38,4 +48,26 @@ public class ReportLocation implements Serializable {
     public String getEndTime() { return endTime; }
     public String getCreatedAt() { return createdAt; }
     public String getUpdatedAt() { return updatedAt; }
+
+    // New getters/setters
+    public Uri getMapImageUri() { return mapImageUri; }
+    public void setMapImageUri(Uri mapImageUri) { this.mapImageUri = mapImageUri; }
+
+    public void setFormattedAddress(String formattedAddress) {
+        this.formattedAddress = formattedAddress;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    // Helper method to convert to JSON
+    public JSONObject toJson() throws JSONException {
+        JSONObject json = new JSONObject();
+        json.put("latitude", latitude);
+        json.put("longitude", longitude);
+        json.put("formattedAddress", formattedAddress);
+        if (displayName != null) json.put("displayName", displayName);
+        return json;
+    }
 }

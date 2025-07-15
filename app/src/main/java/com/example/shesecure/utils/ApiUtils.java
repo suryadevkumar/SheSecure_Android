@@ -8,7 +8,7 @@ import com.example.shesecure.services.RetrofitClient;
 public class ApiUtils {
     public static ApiService initializeApiService(Context context, Class<ApiService> apiServiceClass) {
         try {
-            SecurePrefs securePrefs = new SecurePrefs(context);
+            SecurePrefs securePrefs = SecurePrefs.getInstance(context);
             String baseUrl = securePrefs.getApiBaseUrl();
             return RetrofitClient.getClient(baseUrl).create(ApiService.class);
         } catch (Exception e) {

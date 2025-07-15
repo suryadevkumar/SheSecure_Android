@@ -42,7 +42,7 @@ public class CrimeReportActivity extends BaseActivity
     private List<CrimeReport> reportList = new ArrayList<>();
     private ProgressBar progressBar;
     private TextView emptyStateText;
-    private FloatingActionButton fabNewReport;
+    private FloatingActionButton reportNewCrime;
     private SwipeRefreshLayout swipeRefreshLayout;
     private String userType;
     private ApiService apiService;
@@ -63,7 +63,7 @@ public class CrimeReportActivity extends BaseActivity
         progressBar = findViewById(R.id.progressBar);
         emptyStateText = findViewById(R.id.emptyStateText);
         reportsRecyclerView = findViewById(R.id.reportsRecyclerView);
-        fabNewReport = findViewById(R.id.fabNewReport);
+        reportNewCrime = findViewById(R.id.reportNewCrime);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
     }
 
@@ -80,9 +80,9 @@ public class CrimeReportActivity extends BaseActivity
     }
 
     private void setupClickListeners() {
-        fabNewReport.setOnClickListener(v -> {
+        reportNewCrime.setOnClickListener(v -> {
             if (userType.equals("User")) {
-                startActivity(new Intent(this, CrimeReportActivity.class));
+                startActivity(new Intent(this, CrimeReportSubmissionActivity.class));
             } else {
                 Toast.makeText(this, "Only users can create reports", Toast.LENGTH_SHORT).show();
             }

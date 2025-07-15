@@ -45,6 +45,11 @@ public class FeedbackActivity extends BaseActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // Initialize API service
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
+        authToken = "Bearer " + getSharedPreferences("SheSecurePrefs", MODE_PRIVATE)
+                .getString("token", "");
         checkExistingFeedback();
     }
 
@@ -61,11 +66,6 @@ public class FeedbackActivity extends BaseActivity {
         btnSubmit = findViewById(R.id.btn_submit);
         tvCharCount = findViewById(R.id.tv_char_count);
         tvRatingError = findViewById(R.id.tv_rating_error);
-
-        // Initialize API service
-        apiService = ApiUtils.initializeApiService(this, ApiService.class);
-        authToken = "Bearer " + getSharedPreferences("SheSecurePrefs", MODE_PRIVATE)
-                .getString("token", "");
 
         setupCharacterCounter();
         setupRatingStars();
@@ -110,10 +110,6 @@ public class FeedbackActivity extends BaseActivity {
 
     private void checkExistingFeedback() {
         showProgressDialog("Checking for existing feedback...");
-
-        apiService = ApiUtils.initializeApiService(this, ApiService.class);
-        authToken = "Bearer " + getSharedPreferences("SheSecurePrefs", MODE_PRIVATE)
-                .getString("token", "");
 
         Call<ResponseBody> call = apiService.getUserFeedback(authToken);
         call.enqueue(new Callback<ResponseBody>() {

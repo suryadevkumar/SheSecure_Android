@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="8dp"
+    android:background="@drawable/bg_rounded"
+    android:backgroundTint="@color/gray_50">
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/pink_600"
+        app:hintTextColor="@color/pink_600">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/witnessNameEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Witness Name"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+        <Spinner
+            android:id="@+id/witnessGenderSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:prompt="@string/select_gender"
+            android:paddingVertical="12dp"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/pink_600"
+        app:hintTextColor="@color/pink_600">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/witnessContactEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Contact Number"
+            android:inputType="phone"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        app:boxStrokeColor="@color/pink_600"
+        app:hintTextColor="@color/pink_600">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/witnessAddressEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Address"
+            android:inputType="textPostalAddress"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Witness Photo"
+        android:textColor="@color/pink_600"
+        android:textStyle="bold"
+        android:layout_marginBottom="4dp"/>
+
+    <ImageView
+        android:id="@+id/witnessPhotoImageView"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_gravity="center"
+        android:background="@color/gray_50"
+        android:src="@drawable/camera"
+        android:scaleType="centerCrop"
+        android:layout_marginBottom="8dp"
+        app:tint="@color/pink_400" />
+
+    <Button
+        android:id="@+id/removeWitnessButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Remove Witness"
+        android:textColor="@color/white"
+        android:backgroundTint="@color/pink_600"
+        style="@style/Widget.MaterialComponents.Button.TextButton"/>
+</LinearLayout>
