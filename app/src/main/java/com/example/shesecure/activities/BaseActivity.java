@@ -296,6 +296,8 @@ public class BaseActivity extends AppCompatActivity {
         LinearLayout optionDashboard = popupView.findViewById(R.id.optionDashboard);
         LinearLayout optionMyProfile = popupView.findViewById(R.id.optionMyProfile);
         LinearLayout optionEditProfile = popupView.findViewById(R.id.optionEditProfile);
+        LinearLayout optionChat = popupView.findViewById(R.id.optionChat);
+        LinearLayout optionLocationHistory = popupView.findViewById(R.id.optionLocationHistory);
         LinearLayout optionHelpline = popupView.findViewById(R.id.optionHelpline);
         LinearLayout optionCrimeReport = popupView.findViewById(R.id.optionCrimeReport);
         LinearLayout optionCustomerSupport = popupView.findViewById(R.id.optionCustomerSupport);
@@ -310,6 +312,8 @@ public class BaseActivity extends AppCompatActivity {
         optionDashboard.setOnClickListener(v -> navigateTo(UserDashboardActivity.class));
         optionMyProfile.setOnClickListener(v -> navigateTo(ProfileActivity.class));
         optionEditProfile.setOnClickListener(v -> navigateTo(EditProfileActivity.class));
+        optionChat.setOnClickListener(v -> navigateTo(ChatListActivity.class));
+        optionLocationHistory.setOnClickListener(v -> navigateTo(LocationHistoryActivity.class));
         optionHelpline.setOnClickListener(v -> navigateTo(HelplineActivity.class));
         optionCrimeReport.setOnClickListener(v -> navigateTo(CrimeReportActivity.class));
         optionCustomerSupport.setOnClickListener(v -> navigateTo(CustomerSupportActivity.class));

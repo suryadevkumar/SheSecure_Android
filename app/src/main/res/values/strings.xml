@@ -98,4 +98,18 @@
         <item>Female</item>
         <item>Other</item>
     </string-array>
+
+    <string-array name="problem_types">
+        <item>Select a type</item>
+        <item>Personal</item>
+        <item>Career</item>
+        <item>Family</item>
+        <item>Relationship</item>
+        <item>Mental Health</item>
+        <item>Other</item>
+    </string-array>
+
+    <string name="end_chat_confirmation">The counsellor has requested to end this chat. Do you want to end the conversation?</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>

@@ -23,7 +23,7 @@ public class CrimeReport implements Serializable {
     private List<String> videoUrls = new ArrayList<>();
     private List<Suspect> suspects = new ArrayList<>();
     private List<Witness> witnesses = new ArrayList<>();
-    private ReportLocation location;
+    private Location location;
     private User assignedAdmin;
 
     public CrimeReport(JSONObject json) throws JSONException {
@@ -52,7 +52,7 @@ public class CrimeReport implements Serializable {
 
         // Parse location
         if (json.has("location") && !json.isNull("location")) {
-            this.location = new ReportLocation(json.getJSONObject("location"));
+            this.location = new Location(json.getJSONObject("location"));
         }
 
         // Parse assigned admin
@@ -100,6 +100,6 @@ public class CrimeReport implements Serializable {
     public List<String> getVideoUrls() { return videoUrls; }
     public List<Suspect> getSuspects() { return suspects; }
     public List<Witness> getWitnesses() { return witnesses; }
-    public ReportLocation getLocation() { return location; }
+    public Location getLocation() { return location; }
     public User getAssignedAdmin() { return assignedAdmin; }
 }

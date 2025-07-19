@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <!-- New Chat Request Button (for user) -->
+    <Button
+        android:id="@+id/newChatRequestButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="New Chat Request"
+        android:background="@drawable/bg_rounded"
+        app:backgroundTint="@color/pink_600" />
+
+    <!-- New Request Form (initially hidden) -->
+    <LinearLayout
+        android:id="@+id/newRequestForm"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:visibility="gone"
+        android:background="@color/purple_100">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Create New Request"
+            android:textColor="@color/colorPrimaryDark"
+            android:textStyle="bold" />
+
+        <Spinner
+            android:id="@+id/problemTypeEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="@color/white"
+            android:paddingVertical="10dp" />
+
+        <EditText
+            android:id="@+id/briefEditText"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:layout_marginTop="8dp"
+            android:padding="8dp"
+            android:gravity="top"
+            android:hint="Brief description..."
+            android:inputType="textMultiLine"
+            android:background="@color/white" />
+
+        <Button
+            android:id="@+id/submitRequestButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Submit Request"
+            android:background="@drawable/bg_rounded"
+            app:backgroundTint="@color/pink_600" />
+    </LinearLayout>
+
+    <!-- Tab Layout with Badges -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:tabIndicatorColor="@color/colorPrimary"
+            app:tabSelectedTextColor="@color/colorPrimary"
+            app:tabTextColor="@color/gray">
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chats" />
+
+            <com.google.android.material.tabs.TabItem
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Pending" />
+        </com.google.android.material.tabs.TabLayout>
+
+        <!-- Unread Messages Badge -->
+        <TextView
+            android:id="@+id/unreadMessagesBadge"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="135dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:background="@drawable/circle_bg"
+            android:backgroundTint="@color/red"
+            android:visibility="gone" />
+
+        <!-- Pending Requests Badge -->
+        <TextView
+            android:id="@+id/pendingRequestsBadge"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="350dp"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:background="@drawable/circle_bg"
+            android:backgroundTint="@color/red"
+            android:visibility="gone" />
+    </RelativeLayout>
+
+    <!-- RecyclerViews -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chatRoomsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/chatRequestsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone" />
+    </FrameLayout>
+</LinearLayout>

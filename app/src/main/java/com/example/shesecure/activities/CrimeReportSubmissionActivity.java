@@ -33,7 +33,7 @@ import androidx.core.content.ContextCompat;
 import com.example.shesecure.R;
 import com.example.shesecure.SheSecureApp;
 import com.example.shesecure.adapters.PlaceAutoCompleteAdapter;
-import com.example.shesecure.models.ReportLocation;
+import com.example.shesecure.models.Location;
 import com.example.shesecure.models.Suspect;
 import com.example.shesecure.models.Witness;
 import com.example.shesecure.services.ApiService;
@@ -111,7 +111,7 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
     private List<Uri> videoEvidenceUris = new ArrayList<>();
     private List<Suspect> suspects = new ArrayList<>();
     private List<Witness> witnesses = new ArrayList<>();
-    private ReportLocation reportLocation;
+    private Location location;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -297,7 +297,7 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
 
             // Update form data
             if (place.getLatLng() != null) {
-                reportLocation = new ReportLocation(
+                location = new Location(
                         place.getLatLng().latitude,
                         place.getLatLng().longitude,
                         place.getAddress(),
@@ -325,7 +325,7 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
         }
 
         // Update form data
-        reportLocation = new ReportLocation(
+        location = new Location(
                 latLng.latitude,
                 latLng.longitude,
                 null,
@@ -351,8 +351,8 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
                 locationEditText.setText(addressText);
 
                 // Update form data
-                if (reportLocation != null) {
-                    reportLocation.setFormattedAddress(addressText);
+                if (location != null) {
+                    location.setFormattedAddress(addressText);
                 }
             }
         } catch (IOException e) {
@@ -416,8 +416,8 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
                 toggleMapButton.setText("Hide map");
 
                 // If we have a location, center the map on it
-                if (reportLocation != null) {
-                    LatLng latLng = new LatLng(reportLocation.getLatitude(), reportLocation.getLongitude());
+                if (location != null) {
+                    LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
                     updateMapLocation(latLng);
                 }
             }
@@ -491,8 +491,8 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
             else if (requestCode == LOCATION_SELECTION_REQUEST) {
                 // Handle location selection result
                 if (data != null && data.hasExtra("location")) {
-                    reportLocation = (ReportLocation) data.getSerializableExtra("location");
-                    locationEditText.setText(reportLocation.getFormattedAddress());
+                    location = (Location) data.getSerializableExtra("location");
+                    locationEditText.setText(location.getFormattedAddress());
                 }
             }
         }
@@ -682,7 +682,7 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
             return;
         }
 
-        if (reportLocation == null) {
+        if (location == null) {
             Toast.makeText(this, "Please select location", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -735,9 +735,9 @@ public class CrimeReportSubmissionActivity extends BaseActivity {
             RequestBody date = RequestBody.create(dateEditText.getText().toString(), MediaType.parse("text/plain"));
 
             // Prepare location data
-            RequestBody latitude = RequestBody.create(String.valueOf(reportLocation.getLatitude()), MediaType.parse("text/plain"));
-            RequestBody longitude = RequestBody.create(String.valueOf(reportLocation.getLongitude()), MediaType.parse("text/plain"));
-            RequestBody address = RequestBody.create(reportLocation.getFormattedAddress(), MediaType.parse("text/plain"));
+            RequestBody latitude = RequestBody.create(String.valueOf(location.getLatitude()), MediaType.parse("text/plain"));
+            RequestBody longitude = RequestBody.create(String.valueOf(location.getLongitude()), MediaType.parse("text/plain"));
+            RequestBody address = RequestBody.create(location.getFormattedAddress(), MediaType.parse("text/plain"));
 
             // Prepare suspects and witnesses as JSON
             RequestBody suspectsJson = RequestBody.create(

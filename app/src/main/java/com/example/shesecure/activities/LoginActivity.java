@@ -35,6 +35,7 @@ import com.example.shesecure.R;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.textfield.TextInputLayout;
 
 import org.json.JSONObject;
 
@@ -271,7 +272,9 @@ public class LoginActivity extends AppCompatActivity {
         layoutOTP.setVisibility(View.VISIBLE);
         btnLogin.setVisibility(View.VISIBLE);
         etEmail.setEnabled(false);
-        etEmail.setBackgroundColor(ContextCompat.getColor(this, R.color.gray_300));
+        TextInputLayout tilEmail = findViewById(R.id.tilEmail);
+        tilEmail.setBoxStrokeColor(ContextCompat.getColor(this, R.color.gray_900));
+
 
         if (!otpEditTexts.isEmpty()) {
             otpEditTexts.get(0).requestFocus();
@@ -410,7 +413,7 @@ public class LoginActivity extends AppCompatActivity {
                         if (jsonObject.has("token") && jsonObject.has("user")) {
                             String token = jsonObject.getString("token");
                             JSONObject user = jsonObject.getJSONObject("user");
-
+                            String userId = user.optString("_id", "");
                             String firstName = user.optString("firstName", "");
                             String lastName = user.optString("lastName", "");
                             String emailFromResponse = user.optString("email", "");
@@ -422,6 +425,7 @@ public class LoginActivity extends AppCompatActivity {
                             SharedPreferences.Editor editor = preferences.edit();
 
                             editor.putString("token", token);
+                            editor.putString("userId", userId);
                             editor.putString("firstName", firstName);
                             editor.putString("lastName", lastName);
                             editor.putString("email", emailFromResponse);

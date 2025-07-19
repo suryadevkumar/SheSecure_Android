@@ -91,6 +91,7 @@
 
                             <!-- Email Input -->
                             <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilEmail"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:layout_marginBottom="16dp"
@@ -191,5 +192,5 @@
         android:layout_gravity="start"
         android:background="@color/white"
         app:headerLayout="@layout/nav_logout_header"
-        app:menu="@menu/nav_logout_menu"/>/>
+        app:menu="@menu/nav_logout_menu"/>
 </androidx.drawerlayout.widget.DrawerLayout>

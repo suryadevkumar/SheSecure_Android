@@ -5,6 +5,7 @@ import com.example.shesecure.models.FeedbackRes;
 import com.example.shesecure.models.User;
 
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -19,6 +20,7 @@ import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Part;
 import retrofit2.http.Path;
+import retrofit2.http.Query;
 
 public interface ApiService {
     // Auth endpoints
@@ -150,30 +152,70 @@ public interface ApiService {
             @Path("reportId") String reportId
     );
 
-    // Crime interaction endpoints
-    @GET("api/crimeInteraction/stats")
-    Call<ResponseBody> getCrimeInteractionStats(
+    @GET("location/location-history")
+    Call<ResponseBody> fetchLocationHistory(
+            @Query("date") String date,
             @Header("Authorization") String token
     );
 
-    @GET("api/crimeInteraction/crime-interaction/{crimeId}")
-    Call<ResponseBody> getCrimeInteractions(
+    // Chat endpoints
+    @GET("chat/rooms")
+    Call<ResponseBody> getChatRooms(
             @Header("Authorization") String token,
-            @Path("crimeId") String crimeId
+            @Query("userId") String userId
     );
 
-    @POST("api/crimeInteraction/{crimeId}/interact")
-    Call<ResponseBody> interactWithCrime(
-            @Header("Authorization") String token,
-            @Path("crimeId") String crimeId,
-            @Body RequestBody body
+    @GET("chat/requests")
+    Call<ResponseBody> getChatRequests(
+            @Query("userId") String userId
     );
 
-    @POST("api/crimeInteraction/{crimeId}/comment")
-    Call<ResponseBody> postCrimeComment(
+    @GET("chat/messages")
+    Call<ResponseBody> getMessages(
             @Header("Authorization") String token,
-            @Path("crimeId") String crimeId,
-            @Body RequestBody body
+            @Query("chatRoomId") String chatRoomId
+    );
+
+    @POST("chat/messages/read")
+    Call<ResponseBody> markMessagesRead(@Body RequestBody body);
+
+    @POST("chat/request")
+    Call<ResponseBody> createChatRequest(
+            @Header("Authorization") String token,
+            @Body RequestBody requestData
+    );
+
+    @POST("chat/request/accept")
+    Call<ResponseBody> acceptChatRequest(
+            @Header("Authorization") String token,
+            @Body RequestBody acceptData
+    );
+
+    @POST("chat/message")
+    Call<ResponseBody> sendMessage(
+            @Header("Authorization") String token,
+            @Body RequestBody messageData
+    );
+
+    @POST("chat/end")
+    Call<ResponseBody> endChat(
+            @Header("Authorization") String token,
+            @Body RequestBody endData
+    );
+
+    @GET("chat/messages/unread")
+    Call<ResponseBody> getUnreadCounts(@Query("userId") String userId);
+
+    @POST("chat/typing")
+    Call<ResponseBody> sendTypingIndicator(
+            @Header("Authorization") String token,
+            @Body RequestBody typingData
+    );
+
+    @POST("chat/stop-typing")
+    Call<ResponseBody> sendStopTypingIndicator(
+            @Header("Authorization") String token,
+            @Body RequestBody typingData
     );
 
     // Response classes

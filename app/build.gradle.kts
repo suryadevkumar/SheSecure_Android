@@ -53,6 +53,9 @@ dependencies {
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     implementation("com.squareup.picasso:picasso:2.71828")
     implementation("com.google.android.libraries.places:places:4.3.1")
+    implementation("io.socket:socket.io-client:2.0.0")
+    implementation("com.google.code.gson:gson:2.8.6")
+    implementation("com.google.mlkit:common:18.11.0")
 
     annotationProcessor("com.github.bumptech.glide:compiler:4.12.0")
     testImplementation("junit:junit:4.13.2")

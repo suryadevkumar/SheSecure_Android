@@ -15,6 +15,8 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.CALL_PHONE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.SEND_SMS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
 
     <application
         android:name=".SheSecureApp"
@@ -74,6 +76,9 @@
         <activity android:name=".activities.FullScreenImageActivity"/>
         <activity android:name=".activities.VideoPlayerActivity"/>
         <activity android:name=".activities.CrimeReportSubmissionActivity"/>
+        <activity android:name=".activities.LocationHistoryActivity"/>
+        <activity android:name=".activities.ChatListActivity"/>
+        <activity android:name=".activities.ChatActivity"/>
 
     </application>
 

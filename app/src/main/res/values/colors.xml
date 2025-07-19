@@ -78,4 +78,18 @@
     <color name="teal_50">#F0FDFA</color>
     <color name="white_80">#CCFFFFFF</color>
 
+    <color name="primary_color">#3F51B5</color>
+    <color name="primary_dark">#303F9F</color>
+    <color name="white_alpha_70">#B3FFFFFF</color>
+    <color name="gray">#808080</color>
+    <color name="gray_light">#F1F1F1</color>
+
+    <color name="primaryText">#212121</color>
+    <color name="secondaryText">#757575</color>
+    <color name="white_transparent_60">#99FFFFFF</color>
+    <color name="light_gray">#F5F5F5</color>
+
+    <color name="primary_light">#C5CAE9</color>
+    <color name="yellow_dark">#F57F17</color>
+
 </resources>

@@ -5,7 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import java.io.Serializable;
 
-public class ReportLocation implements Serializable {
+public class Location implements Serializable {
     private String id;
     private double latitude;
     private double longitude;
@@ -15,10 +15,10 @@ public class ReportLocation implements Serializable {
     private String endTime;
     private String createdAt;
     private String updatedAt;
-    private Uri mapImageUri; // New field for local image URI
+    private Uri mapImageUri;
 
     // Existing constructor
-    public ReportLocation(JSONObject json) throws JSONException {
+    public Location(JSONObject json) throws JSONException {
         this.id = json.optString("_id", "");
         this.latitude = json.getDouble("latitude");
         this.longitude = json.getDouble("longitude");
@@ -31,7 +31,7 @@ public class ReportLocation implements Serializable {
     }
 
     // New constructor for local use
-    public ReportLocation(double latitude, double longitude, String address, Uri mapImageUri) {
+    public Location(double latitude, double longitude, String address, Uri mapImageUri) {
         this.latitude = latitude;
         this.longitude = longitude;
         this.formattedAddress = address;
