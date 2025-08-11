@@ -34,6 +34,7 @@ import com.example.shesecure.MainActivity;
 import com.example.shesecure.R;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
+import com.example.shesecure.utils.AuthManager;
 import com.google.android.material.navigation.NavigationView;
 import com.google.android.material.textfield.TextInputLayout;
 
@@ -413,28 +414,10 @@ public class LoginActivity extends AppCompatActivity {
                         if (jsonObject.has("token") && jsonObject.has("user")) {
                             String token = jsonObject.getString("token");
                             JSONObject user = jsonObject.getJSONObject("user");
-                            String userId = user.optString("_id", "");
-                            String firstName = user.optString("firstName", "");
-                            String lastName = user.optString("lastName", "");
-                            String emailFromResponse = user.optString("email", "");
-                            String userType = user.optString("userType", "");
-                            String profileImage = user.optString("image", "");
 
-                            // Store selected data in SharedPreferences
-                            SharedPreferences preferences = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-                            SharedPreferences.Editor editor = preferences.edit();
+                            // Save all data using AuthManager
+                            new AuthManager(LoginActivity.this).saveUserData(token, user);
 
-                            editor.putString("token", token);
-                            editor.putString("userId", userId);
-                            editor.putString("firstName", firstName);
-                            editor.putString("lastName", lastName);
-                            editor.putString("email", emailFromResponse);
-                            editor.putString("userType", userType);
-                            editor.putString("profileImage", profileImage);
-
-                            editor.apply();
-
-                            Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
                             proceedToDashboard();
                         }
                         else {

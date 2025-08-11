@@ -28,6 +28,8 @@ import com.example.shesecure.models.Message;
 import com.example.shesecure.models.User;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
+import com.example.shesecure.utils.AuthManager;
+import com.example.shesecure.utils.SecurePrefs;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -55,8 +57,8 @@ public class ChatActivity extends AppCompatActivity {
     private EditText messageEditText;
     private Button sendButton, endChatAcceptButton, endChatDeclineButton;
     private TextView chatTitleTextView, chatSubtitleTextView, userInitialsView, chatStatusTextView;
-    private String chatRoomId, userId, userType;
-    private SharedPreferences prefs;
+    private String chatRoomId, userId, userType, token;
+    protected AuthManager authManager;
     private ApiService apiService;
     private Socket socket;
     private ChatRoom currentRoom;
@@ -71,6 +73,8 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+        token = authManager.getToken();
 
         // Get chat room ID from intent
         chatRoomId = getIntent().getStringExtra("chatRoomId");
@@ -112,9 +116,8 @@ public class ChatActivity extends AppCompatActivity {
         endChatDeclineButton.setOnClickListener(v -> confirmEndChat(false));
 
         // Get user data
-        prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        userId = prefs.getString("userId", null);
-        userType = prefs.getString("userType", null);
+        userId = authManager.getUserId();
+        userType = authManager.getUserType();
 
         // Initialize API service
         apiService = ApiUtils.initializeApiService(this, ApiService.class);
@@ -156,7 +159,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void loadChatRoom() {
-        String token = prefs.getString("token", null);
         if (token == null) {
             Toast.makeText(this, "Authentication required", Toast.LENGTH_SHORT).show();
             return;
@@ -206,7 +208,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void loadMessages() {
-        String token = prefs.getString("token", null);
         if (token == null) {
             Toast.makeText(this, "Authentication required", Toast.LENGTH_SHORT).show();
             return;
@@ -479,7 +480,9 @@ public class ChatActivity extends AppCompatActivity {
 
     private void initializeSocket() {
         try {
-            socket = IO.socket("http://10.0.2.2:3000/chat");
+            SecurePrefs securePrefs = SecurePrefs.getInstance(this);
+            String socketUrl = securePrefs.getApiBaseUrl()+"/chat";
+            socket = IO.socket(socketUrl);
 
             socket.on(Socket.EVENT_CONNECT, args -> runOnUiThread(() -> {
                 Log.d("Socket", "Connected");
@@ -675,6 +678,8 @@ public class ChatActivity extends AppCompatActivity {
             socket.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

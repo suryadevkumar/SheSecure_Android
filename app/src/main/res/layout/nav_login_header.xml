@@ -32,9 +32,10 @@
     <Button
         android:id="@+id/sosButton"
         android:layout_width="75dp"
-        android:layout_height="40dp"
+        android:layout_height="35dp"
         android:visibility="gone"
         android:text="SOS"
+        android:textSize="12dp"
         android:textColor="@color/white"
         android:backgroundTint="@color/green"
         app:layout_constraintBottom_toBottomOf="parent"

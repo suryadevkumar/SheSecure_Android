@@ -22,8 +22,7 @@ public class LocationHelper {
     }
 
     private static boolean isUser(Context context) {
-        return "User".equals(context.getSharedPreferences("SheSecurePrefs", Context.MODE_PRIVATE)
-                .getString("userType", null));
+        return "User".equals(new AuthManager(context).getUserType());
     }
 
     public static LiveData<Location> getLiveLocation() {

@@ -41,15 +41,9 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_weight="1"
-            android:text="At SheSecure, our mission is to revolutionize women's safety
-                  by providing a user-friendly platform that connects women to
-                  real-time safety features, emergency contacts, and support
-                  services. We are committed to creating a safer environment by
-                  offering instant access to SOS alerts, location sharing, and
-                  emotional support, ensuring that every woman is empowered and
-                  protected in any situation."
+            android:text="@string/mission"
             android:textColor="@color/gray_800"
-            android:textSize="14dp"
+            android:textSize="15sp"
             tools:ignore="TextSizeCheck" />
     </LinearLayout>
 
@@ -82,12 +76,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="Empowering women with the tools and resources they need to
-                  feel safe, confident, and in control. We envision a world
-                  where every woman, regardless of her location, has immediate
-                  access to support, safety, and guidance, enabling her to
-                  navigate the world with peace of mind and security."
-        android:textColor="@color/gray_800" />
+        android:text="@string/vision"
+        android:textColor="@color/gray_800"
+        android:textSize="15sp"/>
 
     <ImageView
         android:layout_width="match_parent"

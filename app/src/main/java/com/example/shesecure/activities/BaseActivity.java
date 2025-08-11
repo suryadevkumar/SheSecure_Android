@@ -35,6 +35,7 @@ import com.example.shesecure.R;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.services.LocationService;
 import com.example.shesecure.utils.ApiUtils;
+import com.example.shesecure.utils.AuthManager;
 
 import org.json.JSONObject;
 
@@ -43,7 +44,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 public class BaseActivity extends AppCompatActivity {
 
     protected ApiService apiService;
-    protected JSONObject userData;
+    protected AuthManager authManager;
     protected String userType;
     protected PopupWindow profilePopupWindow;
     protected View navHeader;
@@ -59,11 +60,11 @@ public class BaseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        authManager = new AuthManager(this);
         apiService = ApiUtils.initializeApiService(this, ApiService.class);
         setStatusBarColor();
 
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        userType = prefs.getString("userType", null);
+        userType = authManager.getUserType();
         isLocationRequired = "User".equals(userType);
     }
 
@@ -255,6 +256,14 @@ public class BaseActivity extends AppCompatActivity {
     private void setStatusBarColor() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.white));
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                getWindow().getDecorView().setSystemUiVisibility(
+                        View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                );
+            }
+            else {
+                getWindow().setStatusBarColor(ContextCompat.getColor(this, R.color.gray_200));
+            }
         }
     }
 
@@ -266,10 +275,8 @@ public class BaseActivity extends AppCompatActivity {
         sosButton.setVisibility(userType != null && userType.equals("User") ? View.VISIBLE : View.GONE);
         sosButton.setOnClickListener(v -> triggerSOS());
 
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        String imageUrl = prefs.getString("profileImage", "");
         Glide.with(this)
-                .load(imageUrl)
+                .load(authManager.getProfileImage())
                 .placeholder(R.drawable.person)
                 .into(profileImage);
         profileImage.setOnClickListener(v -> showProfilePopup(v));
@@ -297,6 +304,7 @@ public class BaseActivity extends AppCompatActivity {
         LinearLayout optionMyProfile = popupView.findViewById(R.id.optionMyProfile);
         LinearLayout optionEditProfile = popupView.findViewById(R.id.optionEditProfile);
         LinearLayout optionChat = popupView.findViewById(R.id.optionChat);
+        LinearLayout optionMapService = popupView.findViewById(R.id.optionMapService);
         LinearLayout optionLocationHistory = popupView.findViewById(R.id.optionLocationHistory);
         LinearLayout optionHelpline = popupView.findViewById(R.id.optionHelpline);
         LinearLayout optionCrimeReport = popupView.findViewById(R.id.optionCrimeReport);
@@ -305,14 +313,14 @@ public class BaseActivity extends AppCompatActivity {
         LinearLayout optionEmergencyContacts = popupView.findViewById(R.id.optionEmergencyContacts);
         LinearLayout optionLogout = popupView.findViewById(R.id.optionLogout);
 
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        tvUserName.setText(prefs.getString("firstName", "") + " " + prefs.getString("lastName", ""));
-        tvUserEmail.setText(prefs.getString("email", "example@example.com"));
+        tvUserName.setText(authManager.getFullName());
+        tvUserEmail.setText(authManager.getEmail());
 
         optionDashboard.setOnClickListener(v -> navigateTo(UserDashboardActivity.class));
         optionMyProfile.setOnClickListener(v -> navigateTo(ProfileActivity.class));
         optionEditProfile.setOnClickListener(v -> navigateTo(EditProfileActivity.class));
         optionChat.setOnClickListener(v -> navigateTo(ChatListActivity.class));
+        optionMapService.setOnClickListener(v -> navigateTo(MapService.class));
         optionLocationHistory.setOnClickListener(v -> navigateTo(LocationHistoryActivity.class));
         optionHelpline.setOnClickListener(v -> navigateTo(HelplineActivity.class));
         optionCrimeReport.setOnClickListener(v -> navigateTo(CrimeReportActivity.class));
@@ -344,9 +352,7 @@ public class BaseActivity extends AppCompatActivity {
     protected void logout() {
         stopService(new Intent(this, LocationService.class));
 
-        SharedPreferences.Editor editor = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE).edit();
-        editor.clear();
-        editor.apply();
+        new AuthManager(this).clearAllData();
 
         Intent intent = new Intent(this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);

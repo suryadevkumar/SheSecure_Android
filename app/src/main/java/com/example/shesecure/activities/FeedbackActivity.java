@@ -48,8 +48,7 @@ public class FeedbackActivity extends BaseActivity {
 
         // Initialize API service
         apiService = ApiUtils.initializeApiService(this, ApiService.class);
-        authToken = "Bearer " + getSharedPreferences("SheSecurePrefs", MODE_PRIVATE)
-                .getString("token", "");
+        authToken = "Bearer " + authManager.getToken();
         checkExistingFeedback();
     }
 

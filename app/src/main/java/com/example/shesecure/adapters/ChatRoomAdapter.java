@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.shesecure.R;
 import com.example.shesecure.models.ChatRoom;
+import com.example.shesecure.utils.AuthManager;
 
 import org.json.JSONException;
 
@@ -24,6 +25,8 @@ import java.util.Locale;
 public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRoomViewHolder> {
     private List<ChatRoom> chatRooms;
     private OnChatRoomClickListener listener;
+
+    protected AuthManager authManager;
 
     public interface OnChatRoomClickListener {
         void onChatRoomClick(ChatRoom chatRoom) throws JSONException;
@@ -81,8 +84,7 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
 
         public void bind(ChatRoom room) {
             // Set room name based on user type
-            SharedPreferences prefs = itemView.getContext().getSharedPreferences("SheSecurePrefs", Context.MODE_PRIVATE);
-            String userType = prefs.getString("userType", null);
+            String userType = authManager.getUserType();
 
             if ("User".equals(userType)) {
                 nameTextView.setText(room.getCounsellor().getFullName());

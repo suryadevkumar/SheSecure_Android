@@ -5,6 +5,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 public class User {
+    public AdditionalDetails additionalDetails;
     @SerializedName("_id")
     private String _id;
     private String firstName;
@@ -54,6 +55,14 @@ public class User {
     public void setMobileNumber(String mobileNumber) { this.mobileNumber = mobileNumber; }
     public void setUserType(String userType) { this.userType = userType; }
     public void setProfileImage(String profileImage) { this.profileImage = profileImage; }
+
+    public void setAdditionalDetails(AdditionalDetails additionalDetails) {
+        this.additionalDetails = additionalDetails;
+    }
+
+    public AdditionalDetails getAdditionalDetails() {
+        return additionalDetails;
+    }
 
     // Helper method
     public String getFullName() {

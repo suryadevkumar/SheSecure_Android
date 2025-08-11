@@ -27,6 +27,7 @@ import com.example.shesecure.models.Message;
 import com.example.shesecure.models.User;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
+import com.example.shesecure.utils.SecurePrefs;
 import com.google.android.material.tabs.TabLayout;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -64,8 +65,7 @@ public class ChatListActivity extends BaseActivity {
     private EditText briefEditText;
     private Spinner problemTypeSpinner;
     private Button submitRequestButton;
-    private String userId, userType;
-    private SharedPreferences prefs;
+    private String userId, userType, token;
     private ApiService apiService;
     private Socket socket;
 
@@ -76,9 +76,9 @@ public class ChatListActivity extends BaseActivity {
         setContentView(R.layout.activity_chat_list);
 
         // Get user data
-        prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        userId = prefs.getString("userId", null);
-        userType = prefs.getString("userType", null);
+        userId = authManager.getUserId();
+        userType = authManager.getUserType();
+        token = authManager.getToken();
 
         // Initialize views
         tabLayout = findViewById(R.id.tabLayout);
@@ -271,7 +271,6 @@ public class ChatListActivity extends BaseActivity {
     }
 
     private void loadChatRooms() {
-        String token = prefs.getString("token", null);
         if (token == null) {
             Toast.makeText(this, "Authentication required", Toast.LENGTH_SHORT).show();
             return;
@@ -321,7 +320,6 @@ public class ChatListActivity extends BaseActivity {
     }
 
     private void loadChatRequests() {
-        String token = prefs.getString("token", null);
         if (token == null) {
             Toast.makeText(this, "Authentication required", Toast.LENGTH_SHORT).show();
             return;
@@ -495,7 +493,9 @@ public class ChatListActivity extends BaseActivity {
 
     private void initializeSocket() {
         try {
-            socket = IO.socket("http://10.0.2.2:3000/chat");
+            SecurePrefs securePrefs = SecurePrefs.getInstance(this);
+            String socketUrl = securePrefs.getApiBaseUrl()+"/chat";
+            socket = IO.socket(socketUrl);
 
             socket.on(Socket.EVENT_CONNECT, args -> runOnUiThread(() -> {
                 Log.d("Socket", "Connected");
@@ -680,6 +680,8 @@ public class ChatListActivity extends BaseActivity {
             socket.connect();
         } catch (URISyntaxException e) {
             e.printStackTrace();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

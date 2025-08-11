@@ -30,10 +30,15 @@
 
     <color name="red_50">#FFEBEE</color>
     <color name="red_100">#FEE2E2</color>
+    <color name="red_200">#ef9a9a</color>
+    <color name="red_300">#e57373</color>
+    <color name="red_400">#EF5350</color>
     <color name="red_500">#F44336</color>
     <color name="red_600">#E53935</color>
     <color name="red">#FF0000</color>
 
+    <color name="blue_300">#64B5F6</color>
+    <color name="blue_400">#42A5F5</color>
     <color name="blue_600">#1E88E5</color>
     <color name="blue">#0B03FB</color>
 

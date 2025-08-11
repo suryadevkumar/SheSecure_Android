@@ -6,9 +6,7 @@
     <string name="get_started">Get Started</string>
     <string name="how_it_works">How It Works</string>
     <string name="key_features">Key Features</string>
-    <string name="about_shesecure">About SheSecure</string>
     <string name="about_description">SheSecure is your all-in-one safety companion, designed especially for women. Whether you\'re commuting late at night, facing an emergency, or just want peace of mind — we\'re here. Real-time location tracking, instant SOS alerts, nearby help centers, and emotional support — all in one place.</string>
-    <string name="about_mission">Our mission is simple: To use technology as a shield, a voice, and a helping hand — so every woman feels confident, safe, and heard at every step of her journey.</string>
     <string name="our_mission">Our Mission</string>
     <string name="mission_description">At SheSecure, our mission is to revolutionize women\'s safety by providing a user-friendly platform that connects women to real-time safety features, emergency contacts, and support services. We are committed to creating a safer environment by offering instant access to SOS alerts, location sharing, and emotional support, ensuring that every woman is empowered and protected in any situation.</string>
     <string name="mission_illustration">Mission illustration</string>
@@ -112,4 +110,13 @@
     <string name="end_chat_confirmation">The counsellor has requested to end this chat. Do you want to end the conversation?</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="mission">At SheSecure, our mission is to revolutionize women\'s safety by providing a user-friendly platform that connects women to real-time safety features, emergency contacts, and support services. We are committed to creating a safer environment by offering instant access to SOS alerts, location sharing, and emotional support, ensuring that every woman is empowered and protected in any situation.</string>
+    <string name="vision">Empowering women with the tools and resources they need to feel safe, confident, and in control. We envision a world where every woman, regardless of her location, has immediate access to support, safety, and guidance, enabling her to navigate the world with peace of mind and security.</string>
+    <string name="location_sharing">Share your real-time location with loved ones and decide who can track you and for how long. Whether you\'re commuting late at night or out for a run, this feature helps keep you safe and reassures those who care about you.</string>
+    <string name="sos_alert">Press the SOS button to instantly alert your emergency contacts and authorities with your location. the alert includes your current location and a distress message so that help can reach you as quickly as possible. Because every second matters.</string>
+    <string name="nearest_hospital">Access a list of nearby hospitals and emergency rooms within seconds. Whether it\'s for first aid or medical emergencies, this feature helps you find the fastest route to care. Powered by real-time location services and Google Maps integration.</string>
+    <string name="nearest_police">SheSecure helps you locate the nearest police station using real-time data and your location. You can get directions instantly and even call directly from the app. In emergencies, this feature ensures that legal help is never far away.</string>
+    <string name="guidance">Sometimes safety means emotional support too. SheSecure connects you with verified counselors and support professionals who are here to listen, guide, and help — whether you\'re dealing with anxiety, fear, or trauma. Your conversations are private, secure, and judgment-free.</string>
+    <string name="about_shesecure">SheSecure is your all-in-one safety companion, designed especially for women. Whether you\'re commuting late at night, facing an emergency, or just want peace of mind — we\'re here. Real-time location tracking, instant SOS alerts, nearby help centers, and emotional support — all in one place.</string>
+    <string name="about_mission">Our mission is simple: To use technology as a shield, a voice, and a helping hand — so every woman feels confident, safe, and heard at every step of her journey.</string>
 </resources>

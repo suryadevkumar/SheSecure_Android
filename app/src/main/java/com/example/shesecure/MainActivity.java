@@ -1,7 +1,6 @@
 package com.example.shesecure;
 
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -28,10 +27,9 @@ import com.bumptech.glide.Glide;
 import com.example.shesecure.activities.LoginActivity;
 import com.example.shesecure.activities.SignupActivity;
 import com.example.shesecure.models.Feedback;
-import com.example.shesecure.models.FeedbackRes;
+import com.example.shesecure.models.FeedbackResponse;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
-import com.example.shesecure.utils.LocationHelper;
 import com.google.android.material.navigation.NavigationView;
 
 import java.text.ParseException;
@@ -139,14 +137,14 @@ public class MainActivity extends AppCompatActivity {
     private void loadFeedbacks() {
         showLoading();
 
-        Call<FeedbackRes> call = apiService.getAllFeedbacks();
-        call.enqueue(new Callback<FeedbackRes>() {
+        Call<FeedbackResponse> call = apiService.getAllFeedbacks();
+        call.enqueue(new Callback<FeedbackResponse>() {
             @Override
-            public void onResponse(Call<FeedbackRes> call, Response<FeedbackRes> response) {
+            public void onResponse(Call<FeedbackResponse> call, Response<FeedbackResponse> response) {
                 hideLoading();
 
                 if (response.isSuccessful() && response.body() != null) {
-                    FeedbackRes feedbackResponse = response.body();
+                    FeedbackResponse feedbackResponse = response.body();
 
                     if (feedbackResponse.isSuccess() && feedbackResponse.getData() != null) {
                         feedbackList = feedbackResponse.getData();
@@ -167,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<FeedbackRes> call, Throwable t) {
+            public void onFailure(Call<FeedbackResponse> call, Throwable t) {
                 hideLoading();
                 showEmptyState();
                 Toast.makeText(MainActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();

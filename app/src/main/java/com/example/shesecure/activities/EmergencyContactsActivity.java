@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.shesecure.R;
 import com.example.shesecure.adapters.EmergencyContactAdapter;
 import com.example.shesecure.models.EmergencyContact;
+import com.example.shesecure.models.EmergencyContactResponse;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.utils.ApiUtils;
 import java.util.ArrayList;
@@ -53,8 +54,7 @@ public class EmergencyContactsActivity extends BaseActivity
         addButton = findViewById(R.id.btn_add);
         cancelButton = findViewById(R.id.btn_cancel);
 
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        authToken = "Bearer " + prefs.getString("token", "");
+        authToken = "Bearer " + authManager.getToken();
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setMessage("Loading...");
@@ -74,12 +74,12 @@ public class EmergencyContactsActivity extends BaseActivity
 
     private void loadContacts() {
         progressDialog.show();
-        Call<ApiService.EmergencyContactResponse> call = apiService.getEmergencyContacts(authToken);
+        Call<EmergencyContactResponse> call = apiService.getEmergencyContacts(authToken);
 
-        call.enqueue(new Callback<ApiService.EmergencyContactResponse>() {
+        call.enqueue(new Callback<EmergencyContactResponse>() {
             @Override
-            public void onResponse(Call<ApiService.EmergencyContactResponse> call,
-                                   Response<ApiService.EmergencyContactResponse> response) {
+            public void onResponse(Call<EmergencyContactResponse> call,
+                                   Response<EmergencyContactResponse> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful() && response.body() != null) {
                     contacts = response.body().getContacts();
@@ -93,7 +93,7 @@ public class EmergencyContactsActivity extends BaseActivity
             }
 
             @Override
-            public void onFailure(Call<ApiService.EmergencyContactResponse> call, Throwable t) {
+            public void onFailure(Call<EmergencyContactResponse> call, Throwable t) {
                 progressDialog.dismiss();
                 showToast("Error: " + t.getMessage());
             }
@@ -123,12 +123,12 @@ public class EmergencyContactsActivity extends BaseActivity
 
     private void addContact(EmergencyContact contact) {
         progressDialog.show();
-        Call<ApiService.EmergencyContactResponse> call = apiService.addEmergencyContact(authToken, contact);
+        Call<EmergencyContactResponse> call = apiService.addEmergencyContact(authToken, contact);
 
-        call.enqueue(new Callback<ApiService.EmergencyContactResponse>() {
+        call.enqueue(new Callback<EmergencyContactResponse>() {
             @Override
-            public void onResponse(Call<ApiService.EmergencyContactResponse> call,
-                                   Response<ApiService.EmergencyContactResponse> response) {
+            public void onResponse(Call<EmergencyContactResponse> call,
+                                   Response<EmergencyContactResponse> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
                     showToast("Contact added successfully");
@@ -140,7 +140,7 @@ public class EmergencyContactsActivity extends BaseActivity
             }
 
             @Override
-            public void onFailure(Call<ApiService.EmergencyContactResponse> call, Throwable t) {
+            public void onFailure(Call<EmergencyContactResponse> call, Throwable t) {
                 progressDialog.dismiss();
                 showToast("Error: " + t.getMessage());
             }
@@ -149,13 +149,13 @@ public class EmergencyContactsActivity extends BaseActivity
 
     private void updateContact(String contactId, EmergencyContact contact) {
         progressDialog.show();
-        Call<ApiService.EmergencyContactResponse> call =
+        Call<EmergencyContactResponse> call =
                 apiService.updateEmergencyContact(contactId, authToken, contact);
 
-        call.enqueue(new Callback<ApiService.EmergencyContactResponse>() {
+        call.enqueue(new Callback<EmergencyContactResponse>() {
             @Override
-            public void onResponse(Call<ApiService.EmergencyContactResponse> call,
-                                   Response<ApiService.EmergencyContactResponse> response) {
+            public void onResponse(Call<EmergencyContactResponse> call,
+                                   Response<EmergencyContactResponse> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
                     showToast("Contact updated successfully");
@@ -167,7 +167,7 @@ public class EmergencyContactsActivity extends BaseActivity
             }
 
             @Override
-            public void onFailure(Call<ApiService.EmergencyContactResponse> call, Throwable t) {
+            public void onFailure(Call<EmergencyContactResponse> call, Throwable t) {
                 progressDialog.dismiss();
                 showToast("Error: " + t.getMessage());
             }
@@ -207,13 +207,13 @@ public class EmergencyContactsActivity extends BaseActivity
 
     private void deleteContact(String contactId) {
         progressDialog.show();
-        Call<ApiService.EmergencyContactResponse> call =
+        Call<EmergencyContactResponse> call =
                 apiService.removeEmergencyContact(contactId, authToken);
 
-        call.enqueue(new Callback<ApiService.EmergencyContactResponse>() {
+        call.enqueue(new Callback<EmergencyContactResponse>() {
             @Override
-            public void onResponse(Call<ApiService.EmergencyContactResponse> call,
-                                   Response<ApiService.EmergencyContactResponse> response) {
+            public void onResponse(Call<EmergencyContactResponse> call,
+                                   Response<EmergencyContactResponse> response) {
                 progressDialog.dismiss();
                 if (response.isSuccessful()) {
                     showToast("Contact deleted successfully");
@@ -224,7 +224,7 @@ public class EmergencyContactsActivity extends BaseActivity
             }
 
             @Override
-            public void onFailure(Call<ApiService.EmergencyContactResponse> call, Throwable t) {
+            public void onFailure(Call<EmergencyContactResponse> call, Throwable t) {
                 progressDialog.dismiss();
                 showToast("Error: " + t.getMessage());
             }

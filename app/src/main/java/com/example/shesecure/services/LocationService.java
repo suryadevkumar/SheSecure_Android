@@ -6,7 +6,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Build;
@@ -21,6 +20,8 @@ import androidx.lifecycle.MutableLiveData;
 import com.example.shesecure.R;
 import com.example.shesecure.SheSecureApp;
 import com.example.shesecure.utils.ApiUtils;
+import com.example.shesecure.utils.AuthManager;
+import com.example.shesecure.utils.LocationDataManager;
 import com.example.shesecure.utils.SecurePrefs;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -54,6 +55,7 @@ public class LocationService extends Service {
     private LocationCallback locationCallback;
     private OkHttpClient httpClient;
     private ApiService apiService;
+    protected AuthManager authManager;
 
     // Static variables for global access
     private static Location staticCurrentLocation;
@@ -64,11 +66,14 @@ public class LocationService extends Service {
     private Location lastSavedLocation;
     private long lastUpdateTime = 0;
     private boolean isFirstLocationUpdate = true;
+    private Location lastCrimeUpdateLocation;
+    private long lastCrimeUpdateTime = 0;
 
     @Override
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, "LocationService onCreate");
+        authManager = new AuthManager(this);
 
         // Initialize HTTP client
         httpClient = new OkHttpClient.Builder()
@@ -108,9 +113,8 @@ public class LocationService extends Service {
     }
 
     private boolean isUserAuthorized() {
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        String userType = prefs.getString("userType", null);
-        String token = prefs.getString("token", null);
+        String userType = authManager.getUserType();
+        String token = authManager.getToken();
 
         return "User".equals(userType) && token != null && !token.isEmpty();
     }
@@ -200,16 +204,38 @@ public class LocationService extends Service {
 
         // Update static location for global access
         staticCurrentLocation = location;
-
-        // Post to LiveData for observers
         liveLocation.postValue(location);
 
-        Log.d(TAG, "Location updated: " + location.getLatitude() + ", " + location.getLongitude());
+        Log.d(TAG, "Location updated hua hai: " + location.getLatitude() + ", " + location.getLongitude());
 
         // Check if we should save this location
         if (shouldSaveLocation(location)) {
             saveLocationToBackend(location);
         }
+
+        if (shouldUpdateCrimes(location)) {
+            LocationDataManager.getInstance().updateUserLocation(location);
+            lastCrimeUpdateLocation = location;
+            lastCrimeUpdateTime = System.currentTimeMillis();
+        }
+
+        if (AuthManager.getLiveLocationShareId(this) != null) {
+            Intent intent = new Intent(this, LiveLocationService.class);
+            intent.setAction("UPDATE_LOCATION");
+            intent.putExtra("latitude", location.getLatitude());
+            intent.putExtra("longitude", location.getLongitude());
+            startService(intent);
+        }
+    }
+
+    private boolean shouldUpdateCrimes(Location newLocation) {
+        if (lastCrimeUpdateLocation == null) return true;
+
+        // Update crimes if moved more than 100 meters or every 5 minutes
+        float distance = lastCrimeUpdateLocation.distanceTo(newLocation);
+        long timeDiff = System.currentTimeMillis() - lastCrimeUpdateTime;
+
+        return distance > 100 || timeDiff > 5 * 60 * 1000;
     }
 
     private boolean shouldSaveLocation(Location newLocation) {
@@ -247,8 +273,7 @@ public class LocationService extends Service {
                 PlaceDetails placeDetails = getPlaceDetails(location.getLatitude(), location.getLongitude());
 
                 // Get auth token
-                SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-                String token = prefs.getString("token", "");
+                String token = authManager.getToken();
 
                 if (token.isEmpty()) {
                     Log.e(TAG, "No auth token found");

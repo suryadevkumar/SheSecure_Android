@@ -64,18 +64,7 @@ public class ProfileActivity extends BaseActivity {
     }
 
     private void loadProfileData() {
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        authToken = "Bearer " + prefs.getString("token", "");
-
-        // First try to load from SharedPreferences
-        String userJson = prefs.getString("userJson", null);
-        if (userJson != null) {
-            try {
-                displayUserData(new JSONObject(userJson));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+        authToken = "Bearer " + authManager.getToken();
 
         // Then fetch fresh data from API
         Call<ResponseBody> call = apiService.getUserDetails(authToken);

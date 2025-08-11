@@ -112,8 +112,7 @@ public class LocationHistoryActivity extends BaseActivity implements OnMapReadyC
         historyListView = findViewById(R.id.historyListView);
 
         // Get auth token and maps API key
-        SharedPreferences prefs = getSharedPreferences("SheSecurePrefs", MODE_PRIVATE);
-        authToken = "Bearer " + prefs.getString("token", null);
+        authToken = "Bearer " + authManager.getToken();
         SecurePrefs securePrefs = ((SheSecureApp) getApplication()).getSecurePrefs();
         mapsApiKey = securePrefs.getGoogleMapsApiKey();
 

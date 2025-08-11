@@ -1,11 +1,13 @@
 package com.example.shesecure.services;
 
+import com.example.shesecure.models.CrimeReport;
 import com.example.shesecure.models.EmergencyContact;
-import com.example.shesecure.models.FeedbackRes;
+import com.example.shesecure.models.EmergencyContactResponse;
+import com.example.shesecure.models.FeedbackResponse;
+import com.example.shesecure.models.PlacesResponse;
 import com.example.shesecure.models.User;
 
 import java.util.List;
-import java.util.Map;
 
 import okhttp3.MultipartBody;
 import okhttp3.RequestBody;
@@ -76,7 +78,7 @@ public interface ApiService {
 
     // Feedback endpoints
     @GET("feedback/get-feedback")
-    Call<FeedbackRes> getAllFeedbacks();
+    Call<FeedbackResponse> getAllFeedbacks();
 
     // Location endpoints
     @POST("location/save-userLocation")
@@ -152,6 +154,37 @@ public interface ApiService {
             @Path("reportId") String reportId
     );
 
+    @POST("crime/get-crimes-near-me")
+    Call<CrimeNearbyResponse> getCrimesNearMe(
+            @Header("Authorization") String authToken,
+            @Body RequestBody body
+    );
+
+    @GET("crimeInteraction/stats")
+    Call<List<CrimeInteractionStats>> getCrimeInteractions(
+            @Header("Authorization") String authToken
+    );
+
+    @GET("crimeInteraction/crime-interaction/{crimeId}")
+    Call<CrimeInteractionDetails> getCrimeInteractionDetails(
+            @Header("Authorization") String authToken,
+            @Path("crimeId") String crimeId
+    );
+
+    @POST("crimeInteraction/{crimeId}/interact")
+    Call<ResponseBody> interactWithCrime(
+            @Header("Authorization") String authToken,
+            @Path("crimeId") String crimeId,
+            @Body RequestBody body
+    );
+
+    @POST("crimeInteraction/{crimeId}/comment")
+    Call<ResponseBody> postCrimeComment(
+            @Header("Authorization") String authToken,
+            @Path("crimeId") String crimeId,
+            @Body RequestBody body
+    );
+
     @GET("location/location-history")
     Call<ResponseBody> fetchLocationHistory(
             @Query("date") String date,
@@ -179,55 +212,48 @@ public interface ApiService {
     @POST("chat/messages/read")
     Call<ResponseBody> markMessagesRead(@Body RequestBody body);
 
-    @POST("chat/request")
-    Call<ResponseBody> createChatRequest(
-            @Header("Authorization") String token,
-            @Body RequestBody requestData
-    );
-
-    @POST("chat/request/accept")
-    Call<ResponseBody> acceptChatRequest(
-            @Header("Authorization") String token,
-            @Body RequestBody acceptData
-    );
-
-    @POST("chat/message")
-    Call<ResponseBody> sendMessage(
-            @Header("Authorization") String token,
-            @Body RequestBody messageData
-    );
-
-    @POST("chat/end")
-    Call<ResponseBody> endChat(
-            @Header("Authorization") String token,
-            @Body RequestBody endData
-    );
-
     @GET("chat/messages/unread")
     Call<ResponseBody> getUnreadCounts(@Query("userId") String userId);
 
-    @POST("chat/typing")
-    Call<ResponseBody> sendTypingIndicator(
-            @Header("Authorization") String token,
-            @Body RequestBody typingData
+    @POST("https://places.googleapis.com/v1/places:searchNearby")
+    Call<PlacesResponse> searchNearbyPlaces(
+            @Header("X-Goog-Api-Key") String apiKey,
+            @Header("X-Goog-FieldMask") String fieldMask,
+            @Body RequestBody body
     );
 
-    @POST("chat/stop-typing")
-    Call<ResponseBody> sendStopTypingIndicator(
-            @Header("Authorization") String token,
-            @Body RequestBody typingData
-    );
-
-    // Response classes
-    class EmergencyContactResponse {
-        private List<EmergencyContact> contacts;
-
-        public List<EmergencyContact> getContacts() {
-            return contacts;
-        }
-
-        public void setContacts(List<EmergencyContact> contacts) {
-            this.contacts = contacts;
-        }
+    class CrimeNearbyResponse {
+        public boolean success;
+        public String message;
+        public List<CrimeReport> crimes;
     }
+
+    class CrimeInteractionStats {
+        public int supports;
+        public int unsupports;
+        public String crimeId;
+    }
+
+    class CrimeInteractionDetails {
+        public int supports;
+        public int unsupports;
+        public List<CrimeComment> comments;
+        public UserInteraction userInteraction;
+    }
+
+    class CrimeComment {
+        public String text;
+        public String createdAt;
+        public User user;
+
+        // Add getters if needed
+        public String getText() { return text; }
+        public String getCreatedAt() { return createdAt; }
+        public User getUser() { return user; }
+    }
+
+    class UserInteraction {
+        public String supportStatus;
+    }
+
 }

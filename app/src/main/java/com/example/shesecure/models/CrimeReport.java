@@ -13,24 +13,26 @@ import java.util.List;
 import java.util.Locale;
 
 public class CrimeReport implements Serializable {
-    private String id;
+    private String _id;
     private String typeOfCrime;
     private String description;
     private String status;
     private String createdAt;
+    private String distance;
     private String firUrl;
-    private List<String> photoUrls = new ArrayList<>();
-    private List<String> videoUrls = new ArrayList<>();
+    private List<String> crimePhotos = new ArrayList<>();
+    private List<String> crimeVideos = new ArrayList<>();
     private List<Suspect> suspects = new ArrayList<>();
     private List<Witness> witnesses = new ArrayList<>();
     private Location location;
     private User assignedAdmin;
 
     public CrimeReport(JSONObject json) throws JSONException {
-        this.id = json.getString("_id");
+        this._id = json.getString("_id");
         this.typeOfCrime = json.getString("typeOfCrime");
         this.description = json.getString("description");
         this.status = json.getString("status");
+        this.distance = json.getString("distance");
         this.createdAt = json.getString("createdAt");
         this.firUrl = json.optString("FIR");
 
@@ -38,7 +40,7 @@ public class CrimeReport implements Serializable {
         JSONArray photosArray = json.optJSONArray("crimePhotos");
         if (photosArray != null) {
             for (int i = 0; i < photosArray.length(); i++) {
-                photoUrls.add(photosArray.getString(i));
+                crimePhotos.add(photosArray.getString(i));
             }
         }
 
@@ -46,7 +48,7 @@ public class CrimeReport implements Serializable {
         JSONArray videosArray = json.optJSONArray("crimeVideos");
         if (videosArray != null) {
             for (int i = 0; i < videosArray.length(); i++) {
-                videoUrls.add(videosArray.getString(i));
+                crimeVideos.add(videosArray.getString(i));
             }
         }
 
@@ -90,16 +92,20 @@ public class CrimeReport implements Serializable {
     }
 
     // Getters
-    public String getId() { return id; }
+    public String getId() { return _id; }
     public String getTypeOfCrime() { return typeOfCrime; }
     public String getDescription() { return description; }
     public String getStatus() { return status; }
     public String getCreatedAt() { return createdAt; }
     public String getFirUrl() { return firUrl; }
-    public List<String> getPhotoUrls() { return photoUrls; }
-    public List<String> getVideoUrls() { return videoUrls; }
+    public List<String> getPhotoUrls() { return crimePhotos; }
+    public List<String> getVideoUrls() { return crimeVideos; }
     public List<Suspect> getSuspects() { return suspects; }
     public List<Witness> getWitnesses() { return witnesses; }
     public Location getLocation() { return location; }
     public User getAssignedAdmin() { return assignedAdmin; }
+
+    public String getDistance() {
+        return distance;
+    }
 }

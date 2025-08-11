@@ -47,8 +47,7 @@ public class CustomerSupportActivity extends BaseActivity {
         apiService = ApiUtils.initializeApiService(this, ApiService.class);
 
         // Get auth token from shared preferences
-        authToken = "Bearer " + getSharedPreferences("SheSecurePrefs", MODE_PRIVATE)
-                .getString("token", "");
+        authToken = "Bearer " + authManager.getToken();
 
         // Set submit button click listener
         btnSubmit.setOnClickListener(v -> submitRequest());

@@ -6,6 +6,7 @@
     <uses-feature android:name="android.hardware.telephony" android:required="false" />
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -37,7 +38,8 @@
             android:value="AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8" />
 
         <activity
-            android:name=".MainActivity"
+            android:name=".activities.SplashActivity"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -63,9 +65,10 @@
             </intent-filter>
         </receiver>
 
+        <activity android:name=".MainActivity" />
+        <activity android:name=".activities.UserDashboardActivity" />
         <activity android:name=".activities.SignupActivity" />
         <activity android:name=".activities.LoginActivity" />
-        <activity android:name=".activities.UserDashboardActivity"/>
         <activity android:name=".activities.ProfileActivity" />
         <activity android:name=".activities.EditProfileActivity" />
         <activity android:name=".activities.HelplineActivity" />
@@ -79,6 +82,7 @@
         <activity android:name=".activities.LocationHistoryActivity"/>
         <activity android:name=".activities.ChatListActivity"/>
         <activity android:name=".activities.ChatActivity"/>
+        <activity android:name=".activities.MapService"/>
 
     </application>
 

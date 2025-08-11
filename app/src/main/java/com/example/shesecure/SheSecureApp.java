@@ -15,7 +15,7 @@ public class SheSecureApp extends Application {
             // Initialize with your keys if they're not already set
             if (securePrefs.getGoogleMapsApiKey() == null) {
                 securePrefs.saveApiKeys(
-                        "http://10.0.2.2:3000/api/",
+                        "https://shesecure-kzfl.onrender.com",
                         "AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8"
                 );
             }

@@ -35,23 +35,18 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:gravity="center"
-                android:text="SheSecure is your all-in-one safety companion,
-          designed especially for women. Whether you're commuting late at night,
-          facing an emergency, or just want peace of mind — we're here.
-          Real-time location tracking, instant SOS alerts, nearby help centers,
-          and emotional support — all in one place."
+                android:text="@string/about_shesecure"
                 android:textColor="@color/gray_700"
-                android:textSize="17sp" />
+                android:textSize="15sp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:gravity="center"
-                android:text="Our mission is simple: To use technology as a shield, a voice, and a
-          helping hand — so every woman feels confident, safe, and heard at every step of her journey."
+                android:text="@string/about_mission"
                 android:textColor="@color/gray_600"
-                android:textSize="15sp" />
+                android:textSize="14sp" />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 

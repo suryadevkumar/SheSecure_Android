@@ -70,9 +70,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:text="Share your real-time location with loved ones and decide who can track you and for how long. Whether you're commuting late at night or out for a run, this feature helps keep you safe and reassures those who care about you."
+                    android:text="@string/location_sharing"
                     android:textColor="@color/gray_800"
-                    android:textSize="18dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -130,9 +130,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:text="Press the SOS button to instantly alert your emergency contacts and authorities with your location. the alert includes your current location and a distress message so that help can reach you as quickly as possible. Because every second matters."
+                    android:text="@string/sos_alert"
                     android:textColor="@color/gray_800"
-                    android:textSize="18dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -190,9 +190,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:text="Access a list of nearby hospitals and emergency rooms within seconds. Whether it's for first aid or medical emergencies, this feature helps you find the fastest route to care. Powered by real-time location services and Google Maps integration."
+                    android:text="@string/nearest_hospital"
                     android:textColor="@color/gray_800"
-                    android:textSize="18dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -250,9 +250,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:text="SheSecure helps you locate the nearest police station using real-time data and your location. You can get directions instantly and even call directly from the app. In emergencies, this feature ensures that legal help is never far away."
+                    android:text="@string/nearest_police"
                     android:textColor="@color/gray_800"
-                    android:textSize="18dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
@@ -310,9 +310,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="15dp"
-                    android:text="Sometimes safety means emotional support too. SheSecure connects you with verified counselors and support professionals who are here to listen, guide, and help — whether you're dealing with anxiety, fear, or trauma. Your conversations are private, secure, and judgment-free."
+                    android:text="@string/guidance"
                     android:textColor="@color/gray_800"
-                    android:textSize="18dp" />
+                    android:textSize="15sp" />
             </LinearLayout>
         </LinearLayout>
     </androidx.cardview.widget.CardView>
