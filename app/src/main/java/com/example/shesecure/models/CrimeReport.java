@@ -32,7 +32,7 @@ public class CrimeReport implements Serializable {
         this.typeOfCrime = json.getString("typeOfCrime");
         this.description = json.getString("description");
         this.status = json.getString("status");
-        this.distance = json.getString("distance");
+        this.distance = json.optString("distance", "");
         this.createdAt = json.getString("createdAt");
         this.firUrl = json.optString("FIR");
 

@@ -44,7 +44,7 @@ public class CrimeReportActivity extends BaseActivity
     private TextView emptyStateText;
     private FloatingActionButton reportNewCrime;
     private SwipeRefreshLayout swipeRefreshLayout;
-    private String userType;
+    private String userType, token;
     private ApiService apiService;
 
     @Override
@@ -52,8 +52,11 @@ public class CrimeReportActivity extends BaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_crime_report);
 
+        token = "Bearer " + authManager.getToken();
+        userType = authManager.getUserType();
+        apiService = ApiUtils.initializeApiService(this, ApiService.class);
+
         initializeViews();
-        setupUserType();
         setupRecyclerView();
         setupClickListeners();
         fetchReports();
@@ -65,12 +68,6 @@ public class CrimeReportActivity extends BaseActivity
         reportsRecyclerView = findViewById(R.id.reportsRecyclerView);
         reportNewCrime = findViewById(R.id.reportNewCrime);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
-    }
-
-    private void setupUserType() {
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        userType = prefs.getString("userType", "User");
-        apiService = ApiUtils.initializeApiService(this, ApiService.class);
     }
 
     private void setupRecyclerView() {
@@ -94,9 +91,6 @@ public class CrimeReportActivity extends BaseActivity
     private void fetchReports() {
         progressBar.setVisibility(View.VISIBLE);
         emptyStateText.setVisibility(View.GONE);
-
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String token = "Bearer " + prefs.getString("token", "");
 
         Call<ResponseBody> call = userType.equals("User")
                 ? apiService.getUserCrimeReports(token)
@@ -191,8 +185,6 @@ public class CrimeReportActivity extends BaseActivity
     }
 
     private void verifyReport(String reportId) {
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String token = "Bearer " + prefs.getString("token", "");
 
         apiService.verifyCrimeReport(token, reportId).enqueue(new Callback<ResponseBody>() {
             @Override
@@ -226,8 +218,6 @@ public class CrimeReportActivity extends BaseActivity
     }
 
     private void deleteReport(String reportId) {
-        SharedPreferences prefs = getSharedPreferences("UserPrefs", MODE_PRIVATE);
-        String token = "Bearer " + prefs.getString("token", "");
 
         apiService.deleteCrimeReport(token, reportId).enqueue(new Callback<ResponseBody>() {
             @Override

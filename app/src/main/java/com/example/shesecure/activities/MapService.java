@@ -2,18 +2,14 @@ package com.example.shesecure.activities;
 
 import android.Manifest;
 import androidx.annotation.NonNull;
-import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -23,16 +19,25 @@ import android.location.Location;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.android.gms.maps.model.PolylineOptions;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import com.example.shesecure.R;
 import com.example.shesecure.SheSecureApp;
@@ -57,11 +62,8 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
-import com.google.android.gms.maps.model.PolylineOptions;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -70,7 +72,7 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
     private GoogleMap mMap;
     private Marker userMarker;
     private FusedLocationProviderClient fusedLocationClient;
-    private String firstName, lastName, profileImage, authToken;
+    private String authToken;
     private Map<String, Marker> crimeMarkers = new HashMap<>();
     private Map<String, Marker> policeMarkers = new HashMap<>();
     private Map<String, Marker> hospitalMarkers = new HashMap<>();
@@ -78,6 +80,8 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
     private static final int MARKER_ANIMATION_DURATION = 1000;
     private static final int CAMERA_ANIMATION_DURATION = 1500;
     private static final float DEFAULT_ZOOM = 15f;
+    private Circle staticSafetyCircle;
+    private Circle animatedRippleCircle;
     private Circle safetyRadiusCircle;
     private ValueAnimator radiusAnimator;
     private CrimeReport nearestCrime;
@@ -134,9 +138,6 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
         String googleApiKey = securePrefs.getGoogleMapsApiKey();
 
         authToken = "Bearer " + authManager.getToken();
-        firstName = authManager.getFirstName();
-        lastName = authManager.getLastName();
-        profileImage = authManager.getProfileImage();
 
         LocationDataManager.getInstance().initialize(apiService, authToken, googleApiKey);
         observeCrimeLocations();
@@ -376,6 +377,8 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
             }
         }
         policeMarkers.clear();
+        int iconWidth = 80;
+        int iconHeight = 80;
 
         for (Place police : policeStations) {
             if (police != null && police.getLocation() != null) {
@@ -390,16 +393,15 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
                         .snippet("Police Station");
 
                 try {
-                    Drawable vectorDrawable = ContextCompat.getDrawable(this, R.drawable.police_ic);
+                    Drawable vectorDrawable = ContextCompat.getDrawable(this, R.drawable.policeicon);
                     if (vectorDrawable != null) {
-                        Bitmap bitmap = Bitmap.createBitmap(
-                                vectorDrawable.getIntrinsicWidth(),
-                                vectorDrawable.getIntrinsicHeight(),
-                                Bitmap.Config.ARGB_8888);
+                        Bitmap bitmap = Bitmap.createBitmap(iconWidth, iconHeight, Bitmap.Config.ARGB_8888);
                         Canvas canvas = new Canvas(bitmap);
                         vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
                         vectorDrawable.draw(canvas);
                         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
+                    } else {
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                     }
                 } catch (Exception e) {
                     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
@@ -407,7 +409,7 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
 
                 Marker marker = mMap.addMarker(markerOptions);
                 marker.setVisible(policeCheckbox.isChecked());
-                policeMarkers.put(police.getDisplayName(), marker); // Using display name as ID
+                policeMarkers.put(police.getDisplayName(), marker);
             }
         }
     }
@@ -422,6 +424,9 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
         }
         hospitalMarkers.clear();
 
+        int iconWidth = 76;
+        int iconHeight = 80;
+
         for (Place hospital : hospitals) {
             if (hospital != null && hospital.getLocation() != null) {
                 LatLng hospitalLatLng = new LatLng(
@@ -435,16 +440,15 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
                         .snippet("Hospital");
 
                 try {
-                    Drawable vectorDrawable = ContextCompat.getDrawable(this, R.drawable.health);
+                    Drawable vectorDrawable = ContextCompat.getDrawable(this, R.drawable.hospitalicon);
                     if (vectorDrawable != null) {
-                        Bitmap bitmap = Bitmap.createBitmap(
-                                vectorDrawable.getIntrinsicWidth(),
-                                vectorDrawable.getIntrinsicHeight(),
-                                Bitmap.Config.ARGB_8888);
+                        Bitmap bitmap = Bitmap.createBitmap(iconWidth, iconHeight, Bitmap.Config.ARGB_8888);
                         Canvas canvas = new Canvas(bitmap);
                         vectorDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
                         vectorDrawable.draw(canvas);
                         markerOptions.icon(BitmapDescriptorFactory.fromBitmap(bitmap));
+                    } else {
+                        markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_BLUE));
                     }
                 } catch (Exception e) {
                     markerOptions.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
@@ -457,6 +461,7 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
         }
     }
 
+    // Add this method to your MapService class
     private void showPathToPlace(Place.Location placeLocation, String placeType) {
         if (mMap == null || currentLocationLatLng == null || placeLocation == null) return;
 
@@ -487,24 +492,151 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
         // Find destination marker and make it visible
         Marker destinationMarker = findMarkerByLatLng(destinationLatLng, placeType);
         if (destinationMarker == null) {
-            // If marker not found, create a temporary one
             destinationMarker = mMap.addMarker(new MarkerOptions()
                     .position(destinationLatLng)
                     .title(placeType));
         }
         destinationMarker.setVisible(true);
 
-        // Draw path (in a real app, you would use Directions API here)
+        // Get directions from Google Directions API
+        getDirections(currentLocationLatLng, destinationLatLng);
+    }
+
+    // Add this new method to get directions from Google Directions API
+    private void getDirections(LatLng origin, LatLng destination) {
+        SecurePrefs securePrefs = ((SheSecureApp) this.getApplicationContext()).getSecurePrefs();
+        String googleApiKey = securePrefs.getGoogleMapsApiKey();
+
+        String url = "https://maps.googleapis.com/maps/api/directions/json?" +
+                "origin=" + origin.latitude + "," + origin.longitude +
+                "&destination=" + destination.latitude + "," + destination.longitude +
+                "&mode=driving" +
+                "&key=" + googleApiKey;
+
+        OkHttpClient client = new OkHttpClient();
+        Request request = new Request.Builder()
+                .url(url)
+                .build();
+
+        client.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.e("DIRECTIONS_API", "Failed to get directions: " + e.getMessage());
+                // Fallback to straight line if API fails
+                runOnUiThread(() -> drawStraightLine(origin, destination));
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                if (response.isSuccessful() && response.body() != null) {
+                    String responseBody = response.body().string();
+                    try {
+                        List<LatLng> routePoints = parseDirectionsResponse(responseBody);
+                        if (!routePoints.isEmpty()) {
+                            runOnUiThread(() -> drawRoute(routePoints));
+                        } else {
+                            // Fallback to straight line if no route found
+                            runOnUiThread(() -> drawStraightLine(origin, destination));
+                        }
+                    } catch (JSONException e) {
+                        Log.e("DIRECTIONS_API", "Failed to parse directions response: " + e.getMessage());
+                        runOnUiThread(() -> drawStraightLine(origin, destination));
+                    }
+                } else {
+                    Log.e("DIRECTIONS_API", "Directions API response not successful");
+                    runOnUiThread(() -> drawStraightLine(origin, destination));
+                }
+            }
+        });
+    }
+
+    // Add this method to parse the directions API response
+    private List<LatLng> parseDirectionsResponse(String responseBody) throws JSONException {
+        List<LatLng> routePoints = new ArrayList<>();
+
+        JSONObject jsonResponse = new JSONObject(responseBody);
+        JSONArray routes = jsonResponse.getJSONArray("routes");
+
+        if (routes.length() > 0) {
+            JSONObject route = routes.getJSONObject(0);
+            JSONObject overviewPolyline = route.getJSONObject("overview_polyline");
+            String encodedPolyline = overviewPolyline.getString("points");
+
+            // Decode the polyline
+            routePoints = decodePolyline(encodedPolyline);
+        }
+
+        return routePoints;
+    }
+
+    // Add this method to decode Google's encoded polyline format
+    private List<LatLng> decodePolyline(String encoded) {
+        List<LatLng> poly = new ArrayList<>();
+        int index = 0, len = encoded.length();
+        int lat = 0, lng = 0;
+
+        while (index < len) {
+            int b, shift = 0, result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlat = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lat += dlat;
+
+            shift = 0;
+            result = 0;
+            do {
+                b = encoded.charAt(index++) - 63;
+                result |= (b & 0x1f) << shift;
+                shift += 5;
+            } while (b >= 0x20);
+            int dlng = ((result & 1) != 0 ? ~(result >> 1) : (result >> 1));
+            lng += dlng;
+
+            LatLng p = new LatLng((((double) lat / 1E5)), (((double) lng / 1E5)));
+            poly.add(p);
+        }
+
+        return poly;
+    }
+
+    //method to draw the actual route
+    private void drawRoute(List<LatLng> routePoints) {
+        if (mMap == null || routePoints.isEmpty()) return;
+
+        PolylineOptions polylineOptions = new PolylineOptions()
+                .addAll(routePoints)
+                .width(8)
+                .color(Color.BLUE)
+                .geodesic(true);
+
+        currentPath = mMap.addPolyline(polylineOptions);
+
+        // Zoom to show the route
+        LatLngBounds.Builder boundsBuilder = new LatLngBounds.Builder();
+        for (LatLng point : routePoints) {
+            boundsBuilder.include(point);
+        }
+
+        LatLngBounds bounds = boundsBuilder.build();
+        mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, 100));
+    }
+
+    // fallback method for straight line (keep your existing logic)
+    private void drawStraightLine(LatLng origin, LatLng destination) {
         currentPath = mMap.addPolyline(new PolylineOptions()
-                .add(currentLocationLatLng, destinationLatLng)
+                .add(origin, destination)
                 .width(5)
-                .color(Color.BLUE));
+                .color(Color.RED) // Different color to indicate it's a fallback
+                .geodesic(true));
 
         // Zoom to show both points
         mMap.animateCamera(CameraUpdateFactory.newLatLngBounds(
                 new LatLngBounds.Builder()
-                        .include(currentLocationLatLng)
-                        .include(destinationLatLng)
+                        .include(origin)
+                        .include(destination)
                         .build(), 100));
     }
 
@@ -520,111 +652,111 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
     }
 
     private void addSafetyRadiusCircle(LatLng position) {
+        // Remove existing circles
         if (safetyRadiusCircle != null) {
             safetyRadiusCircle.remove();
         }
-
-        int backgroundColor;
-        if (rippleColor == Color.RED) {
-            backgroundColor = Color.argb(60, 255, 100, 100);
-        } else {
-            backgroundColor = Color.argb(60, 100, 255, 100);
+        if (staticSafetyCircle != null) {
+            staticSafetyCircle.remove();
+        }
+        if (animatedRippleCircle != null) {
+            animatedRippleCircle.remove();
         }
 
-        safetyRadiusCircle = mMap.addCircle(new CircleOptions()
+        // Create static background circle (like React's main Circle)
+        int backgroundColor;
+        if (rippleColor == Color.RED) {
+            backgroundColor = Color.argb(51, 255, 0, 0); // 0.2 opacity like React
+        } else {
+            backgroundColor = Color.argb(51, 0, 255, 0); // 0.2 opacity like React
+        }
+
+        staticSafetyCircle = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .radius(2000)
+                .radius(2000) // Fixed radius like React's main circle
                 .strokeWidth(2)
-                .strokeColor(Color.argb(100,
+                .strokeColor(Color.argb(204, // 0.8 opacity like React
                         Color.red(rippleColor),
                         Color.green(rippleColor),
                         Color.blue(rippleColor)))
                 .fillColor(backgroundColor));
 
-        startContinuousRippleAnimation(position);
+        // Create animated ripple circle (starts small and grows)
+        animatedRippleCircle = mMap.addCircle(new CircleOptions()
+                .center(position)
+                .radius(500) // Start with smaller radius
+                .strokeWidth(2)
+                .strokeColor(Color.argb(204, // 0.8 opacity like React
+                        Color.red(rippleColor),
+                        Color.green(rippleColor),
+                        Color.blue(rippleColor)))
+                .fillColor(Color.argb(51, // Same fill as static circle
+                        Color.red(rippleColor),
+                        Color.green(rippleColor),
+                        Color.blue(rippleColor))));
+
+        // Keep reference to static circle for backward compatibility
+        safetyRadiusCircle = staticSafetyCircle;
+
+        // Start the simple ripple animation like React
+        startSimpleRippleAnimation();
     }
 
-    private void updateSafetyRadiusCircle(LatLng newPosition) {
-        if (safetyRadiusCircle != null) {
-            safetyRadiusCircle.setCenter(newPosition);
-
-            int backgroundColor;
-            if (rippleColor == Color.RED) {
-                backgroundColor = Color.argb(60, 255, 100, 100);
-            } else {
-                backgroundColor = Color.argb(60, 100, 255, 100);
-            }
-            safetyRadiusCircle.setFillColor(backgroundColor);
-
-            safetyRadiusCircle.setStrokeColor(Color.argb(100,
-                    Color.red(rippleColor),
-                    Color.green(rippleColor),
-                    Color.blue(rippleColor)));
-        }
-    }
-
-    private void startContinuousRippleAnimation(LatLng center) {
+    private void startSimpleRippleAnimation() {
         if (radiusAnimator != null) {
             radiusAnimator.cancel();
         }
 
-        for (int i = 0; i < 4; i++) {
-            final int rippleIndex = i;
-            new Handler().postDelayed(() -> {
-                createContinuousRipple(center, rippleIndex);
-            }, i * 800);
-        }
+        // Create animator that goes from 500 to 2000 (like React's 50 to 200 * 10)
+        radiusAnimator = ValueAnimator.ofFloat(500, 2000);
+        radiusAnimator.setDuration(3000); // 100ms * 30 iterations ≈ 3000ms
+        radiusAnimator.setInterpolator(new LinearInterpolator());
+        radiusAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        radiusAnimator.setRepeatMode(ValueAnimator.RESTART);
+
+        radiusAnimator.addUpdateListener(animation -> {
+            if (animatedRippleCircle != null) {
+                float radius = (float) animation.getAnimatedValue();
+                animatedRippleCircle.setRadius(radius);
+            }
+        });
+
+        radiusAnimator.start();
     }
 
-    private void createContinuousRipple(LatLng center, int rippleIndex) {
-        final Circle rippleCircle = mMap.addCircle(new CircleOptions()
-                .center(center)
-                .radius(100)
-                .strokeWidth(4)
-                .strokeColor(Color.argb(180,
-                        Color.red(rippleColor),
-                        Color.green(rippleColor),
-                        Color.blue(rippleColor)))
-                .fillColor(Color.argb(0, 0, 0, 0)));
+    private void updateSafetyRadiusCircle(LatLng newPosition) {
+        // Update static circle position and colors
+        if (staticSafetyCircle != null) {
+            staticSafetyCircle.setCenter(newPosition);
 
-        ValueAnimator animator = ValueAnimator.ofFloat(100, 2000);
-        animator.setDuration(3000);
-        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+            int backgroundColor;
+            if (rippleColor == Color.RED) {
+                backgroundColor = Color.argb(51, 255, 0, 0); // 0.2 opacity
+            } else {
+                backgroundColor = Color.argb(51, 0, 255, 0); // 0.2 opacity
+            }
 
-        animator.addUpdateListener(animation -> {
-            float radius = (float) animation.getAnimatedValue();
-            rippleCircle.setRadius(radius);
-
-            float progress = (radius - 100) / (2000 - 100);
-            float fadeProgress = 1 - (progress * progress);
-            int alpha = (int) (180 * fadeProgress);
-
-            rippleCircle.setStrokeColor(Color.argb(Math.max(0, alpha),
+            staticSafetyCircle.setFillColor(backgroundColor);
+            staticSafetyCircle.setStrokeColor(Color.argb(204, // 0.8 opacity
                     Color.red(rippleColor),
                     Color.green(rippleColor),
                     Color.blue(rippleColor)));
-        });
+        }
 
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                rippleCircle.remove();
-                new Handler().postDelayed(() -> {
-                    if (mMap != null && currentLocation != null) {
-                        LatLng currentPos = new LatLng(currentLocation.getLatitude(),
-                                currentLocation.getLongitude());
-                        createContinuousRipple(currentPos, rippleIndex);
-                    }
-                }, 300);
-            }
+        // Update animated ripple circle position and colors
+        if (animatedRippleCircle != null) {
+            animatedRippleCircle.setCenter(newPosition);
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                rippleCircle.remove();
-            }
-        });
+            animatedRippleCircle.setStrokeColor(Color.argb(204, // 0.8 opacity
+                    Color.red(rippleColor),
+                    Color.green(rippleColor),
+                    Color.blue(rippleColor)));
 
-        animator.start();
+            animatedRippleCircle.setFillColor(Color.argb(51, // Same fill as static
+                    Color.red(rippleColor),
+                    Color.green(rippleColor),
+                    Color.blue(rippleColor)));
+        }
     }
 
     private void animateMarker(final Marker marker, final LatLng finalPosition) {
@@ -656,7 +788,6 @@ public class MapService extends BaseActivity implements OnMapReadyCallback {
 
     private void updateNearestCrimeDisplay() {
         if (nearestCrime == null || currentLocation == null) {
-            nearestCrimeBanner.setVisibility(View.GONE);
             rippleColor = Color.GREEN;
             safetyPercentageText.setText("100% Safe");
             nearestCrimeBanner.setCardBackgroundColor(ContextCompat.getColor(this, R.color.green));

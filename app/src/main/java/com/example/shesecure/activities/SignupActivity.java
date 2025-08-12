@@ -208,8 +208,8 @@ public class SignupActivity extends AppCompatActivity {
         for (int i = 0; i < OTP_LENGTH; i++) {
             EditText editText = new EditText(this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    dpToPx(45),
-                    dpToPx(45)
+                    dpToPx(42),
+                    dpToPx(42)
             );
             params.setMargins(dpToPx(4), 0, dpToPx(4), 0);
             editText.setLayoutParams(params);

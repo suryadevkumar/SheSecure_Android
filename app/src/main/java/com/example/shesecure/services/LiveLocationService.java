@@ -2,6 +2,7 @@ package com.example.shesecure.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.location.Location;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.Nullable;
@@ -36,14 +37,16 @@ public class LiveLocationService extends Service {
         if (intent != null && intent.getAction() != null) {
             switch (intent.getAction()) {
                 case "START_SHARING":
-                    startSharing();
+                    if (!isSharing) {  // Add this check
+                        startSharing();
+                    }
                     break;
                 case "STOP_SHARING":
                     stopSharing();
                     stopSelf();
                     break;
                 case "UPDATE_LOCATION":
-                    if (intent.hasExtra("latitude") && intent.hasExtra("longitude")) {
+                    if (isSharing && intent.hasExtra("latitude") && intent.hasExtra("longitude")) {
                         double lat = intent.getDoubleExtra("latitude", 0);
                         double lng = intent.getDoubleExtra("longitude", 0);
                         updateLocation(lat, lng);
@@ -55,17 +58,35 @@ public class LiveLocationService extends Service {
     }
 
     private void startSharing() {
-        if (isSharing) return;
-
         shareId = UUID.randomUUID().toString();
         AuthManager.saveLiveLocationShareId(this, shareId);
         isSharing = true;
+
+        // Connect socket if not already connected
+        if (socketManager.isConnected()) {
+            socketManager.connect();
+        }
+
+        // Get current location and start sharing
+        Location currentLocation = LocationService.getCurrentLocation();
+        if (currentLocation != null) {
+            socketManager.startSharing(shareId,
+                    currentLocation.getLatitude(),
+                    currentLocation.getLongitude());
+        } else {
+            Log.w(TAG, "Current location is null when starting sharing");
+        }
 
         Log.d(TAG, "Live location sharing started with ID: " + shareId);
     }
 
     private void updateLocation(double latitude, double longitude) {
         if (!isSharing || shareId == null) return;
+
+        // Ensure socket is connected
+        if (socketManager.isConnected()) {
+            socketManager.connect();
+        }
 
         socketManager.updateLocation(latitude, longitude);
     }

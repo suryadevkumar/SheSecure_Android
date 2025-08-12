@@ -82,15 +82,32 @@ public class SocketManager {
         }
     }
 
+    public boolean isConnected() {
+        return socket == null || !socket.connected();
+    }
+
     public void startSharing(String shareId, double latitude, double longitude) {
         this.shareId = shareId;
 
         try {
+            // Ensure we're connected
+            if (!isConnected) {
+                connect();
+            }
+
             // Join the room
-            socket.emit("location:join", shareId);
+            JSONObject joinData = new JSONObject();
+            joinData.put("shareId", shareId);
+            socket.emit("location:join", joinData);
 
             // Send initial location
-            updateLocation(latitude, longitude);
+            JSONObject locationData = new JSONObject();
+            locationData.put("shareId", shareId);
+            locationData.put("latitude", latitude);
+            locationData.put("longitude", longitude);
+            locationData.put("timestamp", System.currentTimeMillis());
+            socket.emit("location:update", locationData);
+
         } catch (Exception e) {
             Log.e(TAG, "Error starting sharing", e);
         }
@@ -107,6 +124,7 @@ public class SocketManager {
             data.put("timestamp", System.currentTimeMillis());
 
             socket.emit("location:update", data);
+            Log.d(TAG, "Location update sent: " + latitude + ", " + longitude);
         } catch (JSONException e) {
             Log.e(TAG, "Error creating location update JSON", e);
         }

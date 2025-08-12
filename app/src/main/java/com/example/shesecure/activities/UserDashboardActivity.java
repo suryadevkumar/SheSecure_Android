@@ -4,14 +4,13 @@ import android.Manifest;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.cardview.widget.CardView;
+import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.MutableLiveData;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.animation.Animator;
-import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -22,14 +21,13 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.telephony.SmsManager;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.LinearInterpolator;
 import android.widget.Button;
 import android.widget.EditText;
@@ -110,6 +108,8 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     private static final float DEFAULT_ZOOM = 15f;
     private Circle safetyRadiusCircle;
     private ValueAnimator radiusAnimator;
+    private Circle staticSafetyCircle;
+    private Circle animatedRippleCircle;
     private CrimeReport nearestCrime;
     private RecyclerView policeStationsList;
     private RecyclerView hospitalsList;
@@ -119,6 +119,7 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     private TextView nearestCrimeType, nearestCrimeDescription, safetyPercentageText, nearestCrimeDistance;
     private int rippleColor = Color.GREEN;
     private final MutableLiveData<Location> locationObserver = new MutableLiveData<>();
+    private static final int SMS_PERMISSION_REQUEST_CODE = 1001;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -238,28 +239,6 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         });
     }
 
-    private static class EmptyRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-        private View emptyView;
-
-        public EmptyRecyclerViewAdapter(View emptyView) {
-            this.emptyView = emptyView;
-        }
-
-        @NonNull
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(emptyView) {};
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {}
-
-        @Override
-        public int getItemCount() {
-            return 1;
-        }
-    }
-
     private void setupMap() {
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -358,124 +337,111 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void addSafetyRadiusCircle(LatLng position) {
-        // Remove existing circles if any
+        // Remove existing circles
         if (safetyRadiusCircle != null) {
             safetyRadiusCircle.remove();
         }
-
-        // Determine background color based on ripple color with better visibility
-        int backgroundColor;
-        if (rippleColor == Color.RED) {
-            backgroundColor = Color.argb(60, 255, 100, 100); // Light red fill
-        } else {
-            backgroundColor = Color.argb(60, 100, 255, 100); // Light green fill
+        if (staticSafetyCircle != null) {
+            staticSafetyCircle.remove();
+        }
+        if (animatedRippleCircle != null) {
+            animatedRippleCircle.remove();
         }
 
-        // Create the fixed background circle (2km radius) - this stays static
-        safetyRadiusCircle = mMap.addCircle(new CircleOptions()
+        // Create static background circle (like React's main Circle)
+        int backgroundColor;
+        if (rippleColor == Color.RED) {
+            backgroundColor = Color.argb(51, 255, 0, 0); // 0.2 opacity like React
+        } else {
+            backgroundColor = Color.argb(51, 0, 255, 0); // 0.2 opacity like React
+        }
+
+        staticSafetyCircle = mMap.addCircle(new CircleOptions()
                 .center(position)
-                .radius(2000) // 2km radius in meters
-                .strokeWidth(2) // Thin stroke for boundary
-                .strokeColor(Color.argb(100,
+                .radius(2000) // Fixed radius like React's main circle
+                .strokeWidth(2)
+                .strokeColor(Color.argb(204, // 0.8 opacity like React
                         Color.red(rippleColor),
                         Color.green(rippleColor),
                         Color.blue(rippleColor)))
                 .fillColor(backgroundColor));
 
-        // Start the continuous ripple animations
-        startContinuousRippleAnimation(position);
+        // Create animated ripple circle (starts small and grows)
+        animatedRippleCircle = mMap.addCircle(new CircleOptions()
+                .center(position)
+                .radius(500) // Start with smaller radius
+                .strokeWidth(2)
+                .strokeColor(Color.argb(204, // 0.8 opacity like React
+                        Color.red(rippleColor),
+                        Color.green(rippleColor),
+                        Color.blue(rippleColor)))
+                .fillColor(Color.argb(51, // Same fill as static circle
+                        Color.red(rippleColor),
+                        Color.green(rippleColor),
+                        Color.blue(rippleColor))));
+
+        // Keep reference to static circle for backward compatibility
+        safetyRadiusCircle = staticSafetyCircle;
+
+        // Start the simple ripple animation like React
+        startSimpleRippleAnimation();
     }
 
-    private void updateSafetyRadiusCircle(LatLng newPosition) {
-        if (safetyRadiusCircle != null) {
-            safetyRadiusCircle.setCenter(newPosition);
-
-            // Update background color based on current safety status
-            int backgroundColor;
-            if (rippleColor == Color.RED) {
-                backgroundColor = Color.argb(60, 255, 100, 100); // Light red
-            } else {
-                backgroundColor = Color.argb(60, 100, 255, 100); // Light green
-            }
-            safetyRadiusCircle.setFillColor(backgroundColor);
-
-            // Update stroke color as well
-            safetyRadiusCircle.setStrokeColor(Color.argb(100,
-                    Color.red(rippleColor),
-                    Color.green(rippleColor),
-                    Color.blue(rippleColor)));
-        }
-    }
-
-    private void startContinuousRippleAnimation(LatLng center) {
-        // Cancel any existing animations
+    private void startSimpleRippleAnimation() {
         if (radiusAnimator != null) {
             radiusAnimator.cancel();
         }
 
-        // Create continuous ripples with smooth staggered timing
-        for (int i = 0; i < 4; i++) {
-            final int rippleIndex = i;
-            new Handler().postDelayed(() -> {
-                createContinuousRipple(center, rippleIndex);
-            }, i * 800); // Staggered delay
-        }
+        // Create animator that goes from 500 to 2000 (like React's 50 to 200 * 10)
+        radiusAnimator = ValueAnimator.ofFloat(500, 2000);
+        radiusAnimator.setDuration(3000); // 100ms * 30 iterations ≈ 3000ms
+        radiusAnimator.setInterpolator(new LinearInterpolator());
+        radiusAnimator.setRepeatCount(ValueAnimator.INFINITE);
+        radiusAnimator.setRepeatMode(ValueAnimator.RESTART);
+
+        radiusAnimator.addUpdateListener(animation -> {
+            if (animatedRippleCircle != null) {
+                float radius = (float) animation.getAnimatedValue();
+                animatedRippleCircle.setRadius(radius);
+            }
+        });
+
+        radiusAnimator.start();
     }
 
-    private void createContinuousRipple(LatLng center, int rippleIndex) {
-        // Create ripple with current color - these animate over the background circle
-        final Circle rippleCircle = mMap.addCircle(new CircleOptions()
-                .center(center)
-                .radius(100) // Start from smaller radius
-                .strokeWidth(4) // Medium stroke width for ripple
-                .strokeColor(Color.argb(180,
-                        Color.red(rippleColor),
-                        Color.green(rippleColor),
-                        Color.blue(rippleColor)))
-                .fillColor(Color.argb(0, 0, 0, 0))); // Transparent fill - only stroke
+    private void updateSafetyRadiusCircle(LatLng newPosition) {
+        // Update static circle position and colors
+        if (staticSafetyCircle != null) {
+            staticSafetyCircle.setCenter(newPosition);
 
-        // Animation from 100m to 2000m (2km)
-        ValueAnimator animator = ValueAnimator.ofFloat(100, 2000);
-        animator.setDuration(3000); // 3 seconds for full animation
-        animator.setInterpolator(new AccelerateDecelerateInterpolator());
+            int backgroundColor;
+            if (rippleColor == Color.RED) {
+                backgroundColor = Color.argb(51, 255, 0, 0); // 0.2 opacity
+            } else {
+                backgroundColor = Color.argb(51, 0, 255, 0); // 0.2 opacity
+            }
 
-        animator.addUpdateListener(animation -> {
-            float radius = (float) animation.getAnimatedValue();
-            rippleCircle.setRadius(radius);
-
-            // Smooth fade out as ripple expands
-            float progress = (radius - 100) / (2000 - 100);
-            float fadeProgress = 1 - (progress * progress); // Quadratic fade for smooth effect
-            int alpha = (int) (180 * fadeProgress);
-
-            rippleCircle.setStrokeColor(Color.argb(Math.max(0, alpha),
+            staticSafetyCircle.setFillColor(backgroundColor);
+            staticSafetyCircle.setStrokeColor(Color.argb(204, // 0.8 opacity
                     Color.red(rippleColor),
                     Color.green(rippleColor),
                     Color.blue(rippleColor)));
-        });
+        }
 
-        animator.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                rippleCircle.remove();
+        // Update animated ripple circle position and colors
+        if (animatedRippleCircle != null) {
+            animatedRippleCircle.setCenter(newPosition);
 
-                // Restart ripple continuously
-                new Handler().postDelayed(() -> {
-                    if (mMap != null && currentLocation != null) {
-                        LatLng currentPos = new LatLng(currentLocation.getLatitude(),
-                                currentLocation.getLongitude());
-                        createContinuousRipple(currentPos, rippleIndex);
-                    }
-                }, 300); // Short delay before restarting
-            }
+            animatedRippleCircle.setStrokeColor(Color.argb(204, // 0.8 opacity
+                    Color.red(rippleColor),
+                    Color.green(rippleColor),
+                    Color.blue(rippleColor)));
 
-            @Override
-            public void onAnimationCancel(Animator animation) {
-                rippleCircle.remove();
-            }
-        });
-
-        animator.start();
+            animatedRippleCircle.setFillColor(Color.argb(51, // Same fill as static
+                    Color.red(rippleColor),
+                    Color.green(rippleColor),
+                    Color.blue(rippleColor)));
+        }
     }
 
     private void updateMapWithCrimes(List<CrimeReport> crimes) {
@@ -1009,7 +975,9 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
 
         CardView locationBtn = findViewById(R.id.locationBtn);
         locationBtn.setOnClickListener(v -> {
-            if (!isLocationShared) {
+            if (isLocationShared) {
+                stopLiveLocationSharing();
+            } else {
                 isLoading = true;
                 updateLocationButton();
                 shareLiveLocation();
@@ -1043,25 +1011,27 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void updateLocationButton() {
-        CardView locationCard = findViewById(R.id.locationBtn);
-        TextView textView = locationCard.findViewById(R.id.liveLocationText);
-        ImageView iconView = locationCard.findViewById(R.id.liveLocationIcon);
+        runOnUiThread(() -> {
+            CardView locationCard = findViewById(R.id.locationBtn);
+            TextView textView = locationCard.findViewById(R.id.liveLocationText);
+            ImageView iconView = locationCard.findViewById(R.id.liveLocationIcon);
 
-        if (isLoading) {
-            textView.setText("Starting...");
-        } else if (isLocationShared) {
-            locationCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.blue_600));
-            textView.setTextColor(ContextCompat.getColor(this, R.color.white));
-            textView.setText("Location Shared");
-            // Update icon color if needed
-            iconView.setColorFilter(ContextCompat.getColor(this, R.color.white));
-        } else {
-            locationCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.white));
-            textView.setTextColor(ContextCompat.getColor(this, R.color.black));
-            textView.setText("Share Live Location");
-            // Update icon color if needed
-            iconView.setColorFilter(ContextCompat.getColor(this, R.color.blue));
-        }
+            if (isLoading) {
+                textView.setText("Starting...");
+                locationCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.gray_400));
+                iconView.setColorFilter(ContextCompat.getColor(this, R.color.gray_600));
+            } else if (isLocationShared) {
+                locationCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.blue_600));
+                textView.setTextColor(ContextCompat.getColor(this, R.color.white));
+                textView.setText("Stop Sharing");
+                iconView.setColorFilter(ContextCompat.getColor(this, R.color.white));
+            } else {
+                locationCard.setCardBackgroundColor(ContextCompat.getColor(this, R.color.white));
+                textView.setTextColor(ContextCompat.getColor(this, R.color.black));
+                textView.setText("Share Live Location");
+                iconView.setColorFilter(ContextCompat.getColor(this, R.color.blue));
+            }
+        });
     }
 
     private void startSOS() {
@@ -1075,11 +1045,38 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void shareLiveLocation() {
+        isLocationShared = AuthManager.getLiveLocationShareId(this) != null;
         if (!isLocationShared) {
-            // Show contact selection dialog
-            showContactSelectionDialog();
+            // Check SMS permission first
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                    == PackageManager.PERMISSION_GRANTED) {
+                showContactSelectionDialog();
+            } else {
+                // Request SMS permission
+                ActivityCompat.requestPermissions(this,
+                        new String[]{Manifest.permission.SEND_SMS},
+                        SMS_PERMISSION_REQUEST_CODE);
+            }
         } else {
             stopLiveLocationSharing();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
+                                           @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == SMS_PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission granted, proceed with location sharing
+                showContactSelectionDialog();
+            } else {
+                // Permission denied
+                Toast.makeText(this, "SMS permission is required to share location", Toast.LENGTH_SHORT).show();
+                isLoading = false;
+                updateLocationButton();
+            }
         }
     }
 
@@ -1125,6 +1122,15 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     }
 
     private void startLiveLocationSharing(List<String> contactNumbers) {
+        // Double check permission
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "SMS permission required", Toast.LENGTH_SHORT).show();
+            isLoading = false;
+            updateLocationButton();
+            return;
+        }
+
         isLoading = true;
         updateLocationButton();
 
@@ -1134,7 +1140,11 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         // Start the live location service
         Intent serviceIntent = new Intent(this, LiveLocationService.class);
         serviceIntent.setAction("START_SHARING");
-        startService(serviceIntent);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(serviceIntent);
+        } else {
+            startService(serviceIntent);
+        }
 
         // Send SMS to selected contacts
         sendLocationShareSMS(contactNumbers, shareId);
@@ -1151,24 +1161,42 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         serviceIntent.setAction("STOP_SHARING");
         startService(serviceIntent);
 
-        // Update UI
+        // Clear the share ID
+        AuthManager.clearLiveLocationShareId(this);
+        shareId = null;
+
+        // Update state
         isLocationShared = false;
+        isLoading = false;
         updateLocationButton();
+
+        Toast.makeText(this, "Location sharing stopped", Toast.LENGTH_SHORT).show();
     }
 
     private void sendLocationShareSMS(List<String> contactNumbers, String shareId) {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS)
+                != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(this, "SMS permission required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String message = "I'm sharing my live location with you for safety. " +
-                "You can track my location here: " +
-                "http://yourbackend.com/track/" + shareId;
+                "Track my location: " +
+                "https://shesecure.vercel.app/live-location/?shareId=" + shareId;
+
+        SmsManager smsManager = SmsManager.getDefault();
 
         for (String number : contactNumbers) {
             try {
-                SmsManager smsManager = SmsManager.getDefault();
-                smsManager.sendTextMessage(number, null, message, null, null);
+                String formattedNumber = number.replaceAll("[^0-9+]", "");
+                if (formattedNumber.isEmpty()) continue;
+                smsManager.sendTextMessage(formattedNumber, null, message, null, null);
+
             } catch (Exception e) {
                 Log.e("SMS_ERROR", "Failed to send SMS to " + number, e);
             }
         }
+
     }
 
     interface ContactsLoadCallback {

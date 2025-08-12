@@ -130,7 +130,7 @@ public class LocationService extends Service {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("SheSecure Location Tracking")
                 .setContentText("Tracking your location for safety")
-                .setSmallIcon(R.drawable.sos_icon)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
                 .setShowWhen(false)

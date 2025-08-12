@@ -148,8 +148,8 @@ public class LoginActivity extends AppCompatActivity {
         for (int i = 0; i < OTP_LENGTH; i++) {
             EditText editText = new EditText(this);
             LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                    dpToPx(45),
-                    dpToPx(45)
+                    dpToPx(42),
+                    dpToPx(42)
             );
             params.setMargins(dpToPx(4), 0, dpToPx(4), 0);
             editText.setLayoutParams(params);
@@ -343,7 +343,7 @@ public class LoginActivity extends AppCompatActivity {
             btnLogin.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.pink_600));
         } else {
             btnLogin.setEnabled(false);
-            btnLogin.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.pink_400));
+            btnLogin.setBackgroundTintList(ContextCompat.getColorStateList(this, R.color.pink_300));
         }
     }
 

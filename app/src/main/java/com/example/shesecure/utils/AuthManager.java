@@ -38,14 +38,7 @@ public class AuthManager {
             editor.putString(KEY_LAST_NAME, user.optString("lastName", ""));
             editor.putString(KEY_EMAIL, user.optString("email", ""));
             editor.putString(KEY_USER_TYPE, user.optString("userType", ""));
-
-            // Handle nested objects (like additionalDetails)
-            if (user.has("additionalDetails")) {
-                JSONObject additionalDetails = user.optJSONObject("additionalDetails");
-                if (additionalDetails != null) {
-                    editor.putString(KEY_PROFILE_IMAGE, additionalDetails.optString("image", ""));
-                }
-            }
+            editor.putString(KEY_PROFILE_IMAGE, user.optString("image", ""));
 
         } catch (Exception e) {
             e.printStackTrace();
