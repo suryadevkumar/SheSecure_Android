@@ -13,7 +13,7 @@ With features like SOS alerts, live location sharing, and crime reporting, the a
 ## Demo Video
 
 Watch the complete demo of the SheSecure application here:
-👉 
+👉 https://drive.google.com/file/d/1PFuUl8CSpofFrFhql6hZn4NJ0D5IjX4W/view?usp=sharing
 -------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Features
