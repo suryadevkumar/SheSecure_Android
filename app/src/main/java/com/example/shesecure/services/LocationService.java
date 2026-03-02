@@ -130,7 +130,7 @@ public class LocationService extends Service {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("SheSecure Location Tracking")
                 .setContentText("Tracking your location for safety")
-                .setSmallIcon(R.mipmap.ic_launcher)
+                .setSmallIcon(R.drawable.sos_icon)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)
                 .setShowWhen(false)
@@ -205,8 +205,6 @@ public class LocationService extends Service {
         // Update static location for global access
         staticCurrentLocation = location;
         liveLocation.postValue(location);
-
-        Log.d(TAG, "Location updated hua hai: " + location.getLatitude() + ", " + location.getLongitude());
 
         // Check if we should save this location
         if (shouldSaveLocation(location)) {

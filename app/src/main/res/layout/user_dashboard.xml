@@ -272,7 +272,7 @@
             android:textSize="16sp"
             android:padding="8dp"
             android:layout_marginBottom="8dp"
-            android:background="@color/purple_600"
+            android:background="@color/pink_600"
             android:textColor="@color/white"
             app:drawableLeftCompat="@drawable/location"
             app:drawableTint="@color/white" />

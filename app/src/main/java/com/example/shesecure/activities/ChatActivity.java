@@ -1,7 +1,7 @@
 package com.example.shesecure.activities;
 
 import android.animation.ValueAnimator;
-import android.content.SharedPreferences;
+import android.annotation.SuppressLint;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.os.Handler;
@@ -27,9 +27,9 @@ import com.example.shesecure.models.ChatRoom;
 import com.example.shesecure.models.Message;
 import com.example.shesecure.models.User;
 import com.example.shesecure.services.ApiService;
+import com.example.shesecure.socket.CentralizedSocketManager;
 import com.example.shesecure.utils.ApiUtils;
 import com.example.shesecure.utils.AuthManager;
-import com.example.shesecure.utils.SecurePrefs;
 import com.google.gson.Gson;
 
 import org.json.JSONArray;
@@ -60,12 +60,12 @@ public class ChatActivity extends AppCompatActivity {
     private String chatRoomId, userId, userType, token;
     protected AuthManager authManager;
     private ApiService apiService;
-    private Socket socket;
+    private CentralizedSocketManager socketManager;
     private ChatRoom currentRoom;
     private boolean isTyping = false;
     private Handler typingHandler = new Handler();
     private LinearLayout typingIndicatorContainer, endChatConfirmationLayout, messageInputLayout, chatEndedLayout;
-    private ImageView typingIndicatorDot1, typingIndicatorDot2, typingIndicatorDot3;;
+    private ImageView typingIndicatorDot1, typingIndicatorDot2, typingIndicatorDot3;
     private ValueAnimator typingAnimator;
     private View onlineIndicator;
 
@@ -73,6 +73,7 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+        authManager = new AuthManager(this);
 
         token = authManager.getToken();
 
@@ -82,6 +83,9 @@ public class ChatActivity extends AppCompatActivity {
             finish();
             return;
         }
+
+        // Initialize socket manager
+        socketManager = CentralizedSocketManager.getInstance();
 
         messageInputLayout = findViewById(R.id.messageInputLayout);
         chatStatusTextView = findViewById(R.id.chatStatusTextView);
@@ -145,7 +149,6 @@ public class ChatActivity extends AppCompatActivity {
                     emitTyping(false);
                 }
 
-                // Reset typing timeout
                 typingHandler.removeCallbacks(typingTimeout);
                 typingHandler.postDelayed(typingTimeout, 2000);
             }
@@ -173,7 +176,6 @@ public class ChatActivity extends AppCompatActivity {
                         String json = response.body().string();
                         JSONArray roomsArray = new JSONArray(json);
 
-                        // Find the current room from the array
                         for (int i = 0; i < roomsArray.length(); i++) {
                             JSONObject roomObj = roomsArray.getJSONObject(i);
                             ChatRoom room = new Gson().fromJson(roomObj.toString(), ChatRoom.class);
@@ -183,6 +185,9 @@ public class ChatActivity extends AppCompatActivity {
                                 updateChatStatus();
                                 if (room.isOnline()) {
                                     updateOnlineStatus(room.isOnline());
+                                }
+                                if (room.getEndRequestStatus()) {
+                                    endChatConfirmationLayout.setVisibility(View.VISIBLE);
                                 }
                                 break;
                             }
@@ -232,7 +237,6 @@ public class ChatActivity extends AppCompatActivity {
                         messageAdapter.notifyDataSetChanged();
                         scrollToBottom();
 
-                        // Mark messages as read
                         markMessagesAsRead();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -254,12 +258,11 @@ public class ChatActivity extends AppCompatActivity {
             if (show) {
                 endChatConfirmationLayout.setVisibility(View.VISIBLE);
 
-                // Add a system message to notify user
                 Message systemMessage = new Message();
                 systemMessage.setSystem(true);
                 systemMessage.setContent("Counselor has requested to end this chat. Please accept or decline.");
                 systemMessage.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(new Date()));
-
+                systemMessage.setReadBy(new ArrayList<>());
                 messages.add(systemMessage);
                 messageAdapter.notifyItemInserted(messages.size() - 1);
                 scrollToBottom();
@@ -270,18 +273,19 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void confirmEndChat(boolean accept) {
-        if (socket != null && socket.connected()) {
+        Socket chatSocket = socketManager.getChatSocket();
+        if (chatSocket != null && chatSocket.connected()){
             try {
                 JSONObject data = new JSONObject();
                 data.put("chatRoomId", chatRoomId);
                 data.put("userId", userId);
                 data.put("accepted", accept);
 
-                socket.emit("end_chat_response", data);
+                chatSocket.emit("end_chat_response", data);
                 showEndChatConfirmation(false);
 
                 if (accept) {
-                    currentRoom.setEnded(true);
+                    currentRoom.setEnded();
                     Toast.makeText(this, "Chat ended", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(this, "Chat continue", Toast.LENGTH_SHORT).show();
@@ -322,7 +326,8 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void checkPartnerOnlineStatus() {
-        if (socket != null && socket.connected() && currentRoom != null) {
+        Socket chatSocket = socketManager.getChatSocket();
+        if (chatSocket != null && chatSocket.connected() && currentRoom != null) {
             String partnerId = "User".equals(userType) ?
                     currentRoom.getCounsellor().getId() :
                     currentRoom.getUser().getId();
@@ -330,7 +335,7 @@ public class ChatActivity extends AppCompatActivity {
             try {
                 JSONObject data = new JSONObject();
                 data.put("userId", partnerId);
-                socket.emit("check_user_status", data);
+                chatSocket.emit("check_user_status", data);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -346,7 +351,6 @@ public class ChatActivity extends AppCompatActivity {
         typingAnimator.addUpdateListener(animation -> {
             float progress = (float) animation.getAnimatedValue();
 
-            // Animate each dot with a slight delay
             typingIndicatorDot1.setAlpha(progress < 0.33f ? progress * 3 : (1 - (progress - 0.33f) * 1.5f));
             typingIndicatorDot2.setAlpha(progress < 0.66f ?
                     (progress > 0.33f ? (progress - 0.33f) * 3 : 0f) :
@@ -355,6 +359,7 @@ public class ChatActivity extends AppCompatActivity {
         });
     }
 
+    @SuppressLint("SetTextI18n")
     private void updateChatHeader() {
         if (currentRoom == null) return;
 
@@ -366,62 +371,62 @@ public class ChatActivity extends AppCompatActivity {
             userInitialsView.setText(currentRoom.getUser().getInitials().toUpperCase());
         }
 
-        chatSubtitleTextView.setText(currentRoom.getChatRequest().getProblemType() + ": " +
-                currentRoom.getChatRequest().getBrief());
+        chatSubtitleTextView.setText(currentRoom.getProblemType() + ": " +
+                currentRoom.getBrief());
     }
 
     private void sendMessage() {
-        if (currentRoom != null && currentRoom.isEnded()) {
-            Toast.makeText(this, "Chat has ended. Cannot send messages.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        String messageText = messageEditText.getText().toString().trim();
-        if (messageText.isEmpty() || currentRoom == null || currentRoom.isEnded()) return;
-
-        // Create a local message object first
-        Message localMessage = new Message();
-        localMessage.setContent(messageText);
-        localMessage.setChatRoomId(chatRoomId);
-        localMessage.setCreatedAt(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).format(new Date()));
-
-        // Set sender info (you might need to create a User object with current user details)
-        User sender = new User();
-        sender.setId(userId);
-        localMessage.setSender(sender);
-
-        // Add to local list and update UI
-        messages.add(localMessage);
-        messageAdapter.notifyItemInserted(messages.size() - 1);
-        scrollToBottom();
-
-        // Then send via socket
-        if (socket != null && socket.connected()) {
+        String content = messageEditText.getText().toString().trim();
+        if (content.isEmpty()) return;
+        Socket chatSocket = socketManager.getChatSocket();
+        if (chatSocket != null && chatSocket.connected()) {
             try {
-                JSONObject messageData = new JSONObject();
-                messageData.put("chatRoomId", chatRoomId);
-                messageData.put("senderId", userId);
-                messageData.put("content", messageText);
+                JSONObject data = new JSONObject();
+                data.put("chatRoomId", chatRoomId);
+                data.put("senderId", userId);
+                data.put("content", messageEditText.getText().toString());
+                chatSocket.emit("send_message", data);
 
-                socket.emit("send_message", messageData);
+                Message temp = new Message();
+                temp.setContent(content);
+                temp.setChatRoomId(chatRoomId);
+
+                User sender = new User();
+                sender.setId(userId);
+
+                temp.setSender(sender);
+                temp.setCreatedAt(new Date().toString());
+
+                messages.add(temp);
+                messageAdapter.notifyItemInserted(messages.size() - 1);
+                scrollToBottom();
+
                 messageEditText.setText("");
-            } catch (JSONException e) {
-                e.printStackTrace();
-                // Remove the local message if sending fails
-                messages.remove(localMessage);
-                messageAdapter.notifyDataSetChanged();
-            }
+            } catch (Exception e) { }
+        }
+    }
+
+    private void emitTyping(boolean typing) {
+        Socket chatSocket = socketManager.getChatSocket();
+        if (chatSocket != null && chatSocket.connected()) {
+            try {
+                JSONObject data = new JSONObject();
+                data.put("chatRoomId", chatRoomId);
+                data.put("userId", userId);
+                chatSocket.emit(typing ? "user_typing" : "user_stopped_typing", data);
+            } catch (Exception e) { }
         }
     }
 
     private void requestEndChat() {
-        if (socket != null && socket.connected() && "Counsellor".equals(userType)) {
+        Socket chatSocket = socketManager.getChatSocket();
+        if (chatSocket != null && chatSocket.connected() && "Counsellor".equals(userType)) {
             try {
                 JSONObject data = new JSONObject();
                 data.put("chatRoomId", chatRoomId);
                 data.put("counsellorId", userId);
 
-                socket.emit("request_end_chat", data);
+                chatSocket.emit("request_end_chat", data);
                 Toast.makeText(this, "End chat request sent", Toast.LENGTH_SHORT).show();
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -430,31 +435,14 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void markMessagesAsRead() {
-        if (socket != null && socket.connected()) {
+        Socket chatSocket = socketManager.getChatSocket();
+        if (chatSocket != null && chatSocket.connected()) {
             try {
                 JSONObject readData = new JSONObject();
                 readData.put("chatRoomId", chatRoomId);
                 readData.put("userId", userId);
 
-                socket.emit("mark_messages_read", readData);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private void emitTyping(boolean typing) {
-        if (socket != null && socket.connected()) {
-            try {
-                JSONObject typingData = new JSONObject();
-                typingData.put("chatRoomId", chatRoomId);
-                typingData.put("userId", userId);
-
-                if (typing) {
-                    socket.emit("user_typing", typingData);
-                } else {
-                    socket.emit("user_stopped_typing", typingData);
-                }
+                chatSocket.emit("mark_messages_read", readData);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -479,225 +467,140 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void initializeSocket() {
-        try {
-            SecurePrefs securePrefs = SecurePrefs.getInstance(this);
-            String socketUrl = securePrefs.getApiBaseUrl()+"/chat";
-            socket = IO.socket(socketUrl);
+        // Socket should already be initialized by ChatListActivity
+        // Just ensure it's connected
+        Socket chatSocket = socketManager.getChatSocket();
 
-            socket.on(Socket.EVENT_CONNECT, args -> runOnUiThread(() -> {
-                Log.d("Socket", "Connected");
-                socket.emit("user_connected", userId);
-            }));
+        if (chatSocket == null) {
+            socketManager.init(this);
+            chatSocket = socketManager.getChatSocket();
+        }
 
-            socket.on(Socket.EVENT_DISCONNECT, args -> runOnUiThread(() -> {
-                Log.d("Socket", "Disconnected");
-            }));
+        if (chatSocket.connected()) {
+            chatSocket.emit("user_connected", userId);
+            markMessagesAsRead();
+            checkPartnerOnlineStatus();
+        }
 
-            socket.on(Socket.EVENT_CONNECT_ERROR, args -> runOnUiThread(() -> {
-                Log.e("Socket", "Connection error");
-                Toast.makeText(ChatActivity.this, "Connection error", Toast.LENGTH_SHORT).show();
-            }));
+        // 2. Clear previous listeners (to avoid duplicate UI updates)
+        chatSocket.off("new_message");
+        chatSocket.off("user_typing");
+        chatSocket.off("user_stopped_typing");
+        chatSocket.off("user_status_change");
+        chatSocket.off("chat_ended");
+        chatSocket.off("end_chat_request");
+        chatSocket.off("end_chat_request_canceled");
 
-            socket.on("user_status", args -> runOnUiThread(() -> {
-                if (args.length > 0) {
-                    try {
-                        JSONObject statusObj = (JSONObject) args[0];
-                        String statusUserId = statusObj.getString("userId");
-                        String status = statusObj.getString("status");
+        Socket finalChatSocket = chatSocket;
 
-                        String partnerId = "User".equals(userType) ?
-                                currentRoom.getCounsellor().getId() :
-                                currentRoom.getUser().getId();
+        chatSocket.on(Socket.EVENT_CONNECT, args -> {
+            Log.d("SOCKET", "CONNECTED");
 
-                        if (statusUserId.equals(partnerId)) {
-                            updateOnlineStatus("online".equals(status));
-                        }
-                    } catch (JSONException e) {
-                        Log.e("Socket", "Error processing user_status", e);
-                    }
+            finalChatSocket.emit("user_connected", userId);
+
+            runOnUiThread(() -> {
+                markMessagesAsRead();
+                checkPartnerOnlineStatus();
+            });
+        });
+
+        // Set up event listeners specific to this chat
+        chatSocket.on("user_status_change", args -> runOnUiThread(() -> {
+            try {
+                JSONObject obj = (JSONObject) args[0];
+                String status = obj.getString("status");
+                updateOnlineStatus(status.equals("online"));
+            } catch (Exception e) { }
+        }));
+
+        chatSocket.on("new_message", args -> runOnUiThread(() -> {
+            try {
+                JSONObject data = (JSONObject) args[0];
+                Message msg = new Gson().fromJson(data.toString(), Message.class);
+                if (msg.getChatRoomId().equals(chatRoomId)) {
+                    messages.add(msg);
+                    messageAdapter.notifyItemInserted(messages.size() - 1);
+                    scrollToBottom();
+                    markMessagesAsRead();
                 }
-            }));
+            } catch (Exception e) { Log.e("Socket", "Error msg"); }
+        }));
 
-            socket.on("online_users", args -> runOnUiThread(() -> {
-                if (args.length > 0 && currentRoom != null) {
-                    try {
-                        JSONArray onlineUsers = (JSONArray) args[0];
-                        String partnerId = "User".equals(userType) ?
-                                currentRoom.getCounsellor().getId() :
-                                currentRoom.getUser().getId();
+        chatSocket.on("messages_read", args -> runOnUiThread(() -> {
 
-                        boolean isOnline = false;
-                        for (int i = 0; i < onlineUsers.length(); i++) {
-                            if (onlineUsers.getString(i).equals(partnerId)) {
-                                isOnline = true;
-                                break;
-                            }
-                        }
-                        updateOnlineStatus(isOnline);
-                    } catch (JSONException e) {
-                        Log.e("Socket", "Error processing online_users", e);
-                    }
+            for (Message msg : messages) {
+
+                if (msg.getReadBy() == null) {
+                    msg.setReadBy(new ArrayList<>());
                 }
-            }));
 
-            socket.on("new_message", args -> runOnUiThread(() -> {
+                if (!msg.getReadBy().contains(userId)) {
+                    msg.getReadBy().add(userId);
+                }
+            }
+
+            messageAdapter.notifyDataSetChanged();
+        }));
+
+        chatSocket.on("user_typing", args -> runOnUiThread(() -> {
+            try {
+                JSONObject obj = (JSONObject) args[0];
+
+                if (obj.getString("chatRoomId").equals(chatRoomId)
+                        && !obj.getString("userId").equals(userId)) {
+
+                    typingIndicatorContainer.setVisibility(View.VISIBLE);
+
+                    if (!typingAnimator.isRunning())
+                        typingAnimator.start();
+                }
+
+            } catch (Exception e) { }
+        }));
+
+        chatSocket.on("user_stopped_typing", args -> runOnUiThread(() -> {
+            typingIndicatorContainer.setVisibility(View.GONE);
+            typingAnimator.cancel();
+        }));
+
+        chatSocket.on("end_chat_request", args ->{
+            if (!isFinishing() && !isDestroyed()) {
+
+                runOnUiThread(() -> {
+                    if ("User".equals(userType)) {
+                        showEndChatConfirmation(true);
+                    }
+                });
+            }
+
+        });
+
+        chatSocket.on("end_chat_request_canceled", args -> runOnUiThread(() -> {
+            if ("User".equals(userType)) showEndChatConfirmation(false);
+        }));
+
+        chatSocket.on("clear_end_request_lock", args -> runOnUiThread(() -> {
+            if (args.length > 0) {
                 try {
-                    if (args.length > 0) {
-                        JSONObject messageObj = (JSONObject) args[0];
-                        Log.d("Socket", "New message received: " + messageObj.toString());
+                    JSONObject requestObj = (JSONObject) args[0];
+                    String requestRoomId = requestObj.getString("chatRoomId");
 
-                        Message message = new Gson().fromJson(messageObj.toString(), Message.class);
-
-                        // Enhanced validation
-                        if (message == null || message.getId() == null) {
-                            Log.e("Socket", "Invalid message received");
-                            return;
-                        }
-
-                        if (message.getChatRoomId() != null && message.getChatRoomId().equals(chatRoomId)) {
-                            // Check if message exists by ID and content
-                            boolean exists = false;
-                            for (int i = 0; i < messages.size(); i++) {
-                                Message existing = messages.get(i);
-                                if (existing.getId() != null && existing.getId().equals(message.getId())) {
-                                    // Update existing message if needed
-                                    if (!existing.getContent().equals(message.getContent())) {
-                                        messages.set(i, message);
-                                        messageAdapter.notifyItemChanged(i);
-                                    }
-                                    exists = true;
-                                    break;
-                                }
-                            }
-
-                            if (!exists) {
-                                messages.add(message);
-                                messageAdapter.notifyItemInserted(messages.size() - 1);
-                                scrollToBottom();
-
-                                // Mark as read if not sent by current user
-                                if (!isCurrentUser(message)) {
-                                    markMessagesAsRead();
-                                }
-                            }
-                        }
+                    if (requestRoomId.equals(chatRoomId)) {
+                        showEndChatConfirmation(false);
                     }
-                } catch (Exception e) {
-                    Log.e("Socket", "Error processing new message", e);
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            }));
+            }
+        }));
 
-            socket.on("user_typing", args -> runOnUiThread(() -> {
-                if (args.length > 0) {
-                    try {
-                        JSONObject typingObj = (JSONObject) args[0];
-                        String typingRoomId = typingObj.getString("chatRoomId");
-                        String typingUserId = typingObj.getString("userId");
+        chatSocket.on("chat_ended", args -> runOnUiThread(() -> {
+            currentRoom.setEnded();
+            updateChatStatus();
+            Toast.makeText(this, "Chat has ended", Toast.LENGTH_SHORT).show();
+        }));
 
-                        if (typingRoomId.equals(chatRoomId) && !typingUserId.equals(userId)) {
-                            typingIndicatorContainer.setVisibility(View.VISIBLE);
-                            if (!typingAnimator.isRunning()) {
-                                typingAnimator.start();
-                            }
-                        }
-                    } catch (JSONException e) {
-                        Log.e("Socket", "Error handling typing event", e);
-                    }
-                }
-            }));
-
-            socket.on("user_stopped_typing", args -> runOnUiThread(() -> {
-                if (args.length > 0) {
-                    try {
-                        JSONObject typingObj = (JSONObject) args[0];
-                        String typingRoomId = typingObj.getString("chatRoomId");
-
-                        if (typingRoomId.equals(chatRoomId)) {
-                            typingIndicatorContainer.setVisibility(View.GONE);
-                            if (typingAnimator.isRunning()) {
-                                typingAnimator.cancel();
-                            }
-                        }
-                    } catch (JSONException e) {
-                        Log.e("Socket", "Error handling stop typing event", e);
-                    }
-                }
-            }));
-
-            socket.on("end_chat_request", args -> runOnUiThread(() -> {
-                if (args.length > 0) {
-                    try {
-                        JSONObject requestObj = (JSONObject) args[0];
-                        String requestRoomId = requestObj.getString("chatRoomId");
-
-                        if (requestRoomId.equals(chatRoomId)) {
-                            // Only show for users (counselors initiate the request)
-                            if ("User".equals(userType)) {
-                                showEndChatConfirmation(true);
-                            }
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }));
-
-            socket.on("clear_end_request_lock", args -> runOnUiThread(() -> {
-                if (args.length > 0) {
-                    try {
-                        JSONObject requestObj = (JSONObject) args[0];
-                        String requestRoomId = requestObj.getString("chatRoomId");
-
-                        if (requestRoomId.equals(chatRoomId)) {
-                            showEndChatConfirmation(false);
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }));
-
-            socket.on("chat_ended", args -> runOnUiThread(() -> {
-                if (args.length > 0) {
-                    try {
-                        JSONObject endObj = (JSONObject) args[0];
-                        String endedRoomId = endObj.getString("chatRoomId");
-
-                        if (endedRoomId.equals(chatRoomId)) {
-                            currentRoom.setEnded(true);
-                            updateChatStatus();
-                            updateChatHeader();
-                            Toast.makeText(ChatActivity.this, "Chat has ended", Toast.LENGTH_SHORT).show();
-                        }
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }));
-
-            socket.connect();
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        if (!chatSocket.connected()) chatSocket.connect();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (socket != null) {
-            socket.disconnect();
-        }
-        typingHandler.removeCallbacks(typingTimeout);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        if (socket != null && !socket.connected()) {
-            socket.connect();
-        }
-        checkPartnerOnlineStatus();
-    }
 }

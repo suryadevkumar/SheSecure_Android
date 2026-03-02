@@ -18,7 +18,13 @@ public class SheSecureApp extends Application {
                         "https://shesecure-kzfl.onrender.com",
                         "AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8"
                 );
+
+//                securePrefs.saveApiKeys(
+//                        "http://10.0.2.2:3000",
+//                        "AIzaSyAqJW62Rkv5azC1er-_jr-3AolJffDmHp8"
+//                );
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

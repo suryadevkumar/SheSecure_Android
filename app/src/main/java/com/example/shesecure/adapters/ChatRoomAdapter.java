@@ -1,5 +1,6 @@
 package com.example.shesecure.adapters;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.view.LayoutInflater;
@@ -32,10 +33,16 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
         void onChatRoomClick(ChatRoom chatRoom) throws JSONException;
     }
 
-    public ChatRoomAdapter(List<ChatRoom> chatRooms, OnChatRoomClickListener listener) {
+    public ChatRoomAdapter(
+            Context context,
+            List<ChatRoom> chatRooms,
+            OnChatRoomClickListener listener
+    ) {
         this.chatRooms = chatRooms;
         this.listener = listener;
+        this.authManager = new AuthManager(context); // ⭐ MOST IMPORTANT LINE
     }
+
 
     @NonNull
     @Override
@@ -82,6 +89,7 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
             });
         }
 
+        @SuppressLint("SetTextI18n")
         public void bind(ChatRoom room) {
             // Set room name based on user type
             String userType = authManager.getUserType();
@@ -95,7 +103,9 @@ public class ChatRoomAdapter extends RecyclerView.Adapter<ChatRoomAdapter.ChatRo
             }
 
             // Set last message preview
-            problemTextView.setText(room.getChatRequest().getProblemType() + ": " + room.getChatRequest().getBrief());
+            problemTextView.setText(
+                    room.getProblemType() + ": " + room.getBrief()
+            );
 
             // Set time
             try {

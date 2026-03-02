@@ -2,6 +2,8 @@ package com.example.shesecure.models;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.util.Objects;
+
 public class ChatRoom {
     @SerializedName("_id")
     private String _id;
@@ -11,14 +13,20 @@ public class ChatRoom {
     private User user;
     @SerializedName("counsellor")
     private User counsellor;
-    @SerializedName("isEnded")
-    private boolean isEnded;
+    @SerializedName("problemType")
+    private String problemType;
+    @SerializedName("brief")
+    private String brief;
+    @SerializedName("status")
+    private String status;
     @SerializedName("endedAt")
     private String endedAt;
     @SerializedName("createdAt")
     private String createdAt;
     @SerializedName("unreadCount")
     private int unreadCount;
+    @SerializedName("endRequestStatus")
+    private boolean endRequestStatus;
     private boolean isOnline;
 
     // Getters and setters
@@ -29,9 +37,18 @@ public class ChatRoom {
     public User getUser() { return user; }
     public void setUser(User user) { this.user = user; }
     public User getCounsellor() {return counsellor;}
+    public String getProblemType() {
+        return problemType;
+    }
+
+    public String getBrief() {
+        return brief;
+    }
+
     public void setCounsellor(User counsellor) {this.counsellor = counsellor;}
-    public boolean isEnded() { return isEnded; }
-    public void setEnded(boolean ended) { isEnded = ended; }
+    public boolean isEnded() { return status.equals("Completed"); }
+    public void setEnded() { status = "Completed"; }
+    public boolean getEndRequestStatus() { return endRequestStatus; }
     public String getEndedAt() { return endedAt; }
     public void setEndedAt(String endedAt) { this.endedAt = endedAt; }
     public String getCreatedAt() { return createdAt; }

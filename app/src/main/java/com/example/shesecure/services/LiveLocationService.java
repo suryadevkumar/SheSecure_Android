@@ -6,24 +6,28 @@ import android.location.Location;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.Nullable;
-import com.example.shesecure.socket.SocketManager;
+import com.example.shesecure.socket.CentralizedSocketManager;
 import com.example.shesecure.utils.AuthManager;
-
+import io.socket.client.Socket;
+import org.json.JSONObject;
 import java.util.UUID;
 
 public class LiveLocationService extends Service {
     private static final String TAG = "LiveLocationService";
-    private SocketManager socketManager;
+    private CentralizedSocketManager socketManager;
     private String shareId;
     private boolean isSharing = false;
 
     @Override
     public void onCreate() {
         super.onCreate();
+        // Centralized instance lein
+        socketManager = CentralizedSocketManager.getInstance();
 
-        // Then initialize other components
-        socketManager = SocketManager.getInstance(this);
-        socketManager.connect();
+        // Agar kisi wajah se socket init nahi hua (app kill hone ke baad service restart hui)
+        if (socketManager.getLocationSocket() == null) {
+            socketManager.init(getApplicationContext());
+        }
 
         // Check for existing session
         shareId = AuthManager.getLiveLocationShareId(this);
@@ -37,7 +41,7 @@ public class LiveLocationService extends Service {
         if (intent != null && intent.getAction() != null) {
             switch (intent.getAction()) {
                 case "START_SHARING":
-                    if (!isSharing) {  // Add this check
+                    if (!isSharing) {
                         startSharing();
                     }
                     break;
@@ -62,39 +66,60 @@ public class LiveLocationService extends Service {
         AuthManager.saveLiveLocationShareId(this, shareId);
         isSharing = true;
 
-        // Connect socket if not already connected
-        if (socketManager.isConnected()) {
-            socketManager.connect();
+        Socket locationSocket = socketManager.getLocationSocket();
+
+        // Location emit logic using Namespace socket
+        if (locationSocket != null) {
+            if (!locationSocket.connected()) {
+                locationSocket.connect();
+            }
+
+            // Get initial location
+            Location currentLocation = LocationService.getCurrentLocation();
+            if (currentLocation != null) {
+                emitLocationData(currentLocation.getLatitude(), currentLocation.getLongitude());
+            }
         }
 
-        // Get current location and start sharing
-        Location currentLocation = LocationService.getCurrentLocation();
-        if (currentLocation != null) {
-            socketManager.startSharing(shareId,
-                    currentLocation.getLatitude(),
-                    currentLocation.getLongitude());
-        } else {
-            Log.w(TAG, "Current location is null when starting sharing");
-        }
-
-        Log.d(TAG, "Live location sharing started with ID: " + shareId);
+        Log.d(TAG, "Live location sharing started: " + shareId);
     }
 
     private void updateLocation(double latitude, double longitude) {
         if (!isSharing || shareId == null) return;
+        emitLocationData(latitude, longitude);
+    }
 
-        // Ensure socket is connected
-        if (socketManager.isConnected()) {
-            socketManager.connect();
+    private void emitLocationData(double lat, double lng) {
+        Socket locationSocket = socketManager.getLocationSocket();
+
+        if (locationSocket != null && locationSocket.connected()) {
+            try {
+                JSONObject data = new JSONObject();
+                data.put("shareId", shareId);
+                data.put("latitude", lat);
+                data.put("longitude", lng);
+                data.put("timestamp", System.currentTimeMillis());
+
+                // Namespace emit
+                locationSocket.emit("location:update", data);
+                Log.d(TAG, "Location sent: " + lat + ", " + lng);
+            } catch (Exception e) {
+                Log.e(TAG, "JSON Error: " + e.getMessage());
+            }
+        } else {
+            Log.w(TAG, "Location socket not connected, retrying connection...");
+            if (locationSocket != null) locationSocket.connect();
         }
-
-        socketManager.updateLocation(latitude, longitude);
     }
 
     private void stopSharing() {
         if (!isSharing) return;
 
-        socketManager.stopSharing();
+        Socket locationSocket = socketManager.getLocationSocket();
+        if (locationSocket != null && locationSocket.connected()) {
+            locationSocket.emit("location:stop", shareId);
+        }
+
         AuthManager.clearLiveLocationShareId(this);
         isSharing = false;
         shareId = null;
@@ -107,7 +132,8 @@ public class LiveLocationService extends Service {
 
     @Override
     public void onDestroy() {
-        socketManager.disconnect();
+        // Service kill hone par socket disconnect nahi karenge
+        // kyunki chat ya SOS chal raha ho sakta hai.
         super.onDestroy();
     }
 

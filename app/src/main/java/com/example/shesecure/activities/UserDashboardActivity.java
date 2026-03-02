@@ -50,6 +50,7 @@ import com.example.shesecure.models.EmergencyContactResponse;
 import com.example.shesecure.models.User;
 import com.example.shesecure.services.ApiService;
 import com.example.shesecure.services.LiveLocationService;
+import com.example.shesecure.socket.CentralizedSocketManager;
 import com.example.shesecure.socket.SocketManager;
 import com.example.shesecure.utils.ApiUtils;
 import com.example.shesecure.utils.AuthManager;
@@ -94,7 +95,6 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
     private boolean isSOSActive = false;
     private boolean isLocationShared = false;
     private boolean isLoading = false;
-    private SocketManager socketManager;
     private String shareId;
     private String firstName, lastName, profileImage, authToken;
     private ApiService apiService;
@@ -168,7 +168,8 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
         nearestCrimeDistance = findViewById(R.id.nearest_crime_distance);
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
-        socketManager = SocketManager.getInstance(this);
+        // Login success hone par:
+        CentralizedSocketManager.getInstance().init(this);
         isLocationShared = AuthManager.getLiveLocationShareId(this) != null;
         updateLocationButton();
         setupMap();
@@ -1130,6 +1131,7 @@ public class UserDashboardActivity extends BaseActivity implements OnMapReadyCal
             updateLocationButton();
             return;
         }
+        boolean
 
         isLoading = true;
         updateLocationButton();
